@@ -67,7 +67,7 @@ LOSS_FUNCTIONS = {
 class OHEncoder:
     def __init__(self, categories=np.array(['A', 'C', 'G', 'T']), noise=True, verbose=True):
         self.noise = noise
-        self.encoder = Encoder(sparse_output=False, categories=[categories], handle_unknown='ignore', dtype=np.int8)
+        self.encoder = Encoder(sparse=False, categories=[categories], handle_unknown='ignore', dtype=np.int8)
         self.dictionary = categories
         self.encoder.fit(categories.reshape(-1, 1))
 		
