@@ -194,6 +194,11 @@ for epoch in range(num_epochs + 1):
     train_loss_reduced = train_loss_reduced / num_batches
     valid_loss_reduced = valid_loss_reduced / len(valid_loader)
 
+    # Store the loss values in a format expected by `write_results`
+    globals()['train_losses'] = [train_loss_reduced]
+    globals()['valid_losses'] = [valid_loss_reduced]
+
+
     # If it's the last epoch, save outputs for analysis
     if epoch == num_epochs:
         logger.info('Last epoch - saving outputs!')
