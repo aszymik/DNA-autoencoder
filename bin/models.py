@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class CNNAutoencoder(nn.Module):
-    def __init__(self, input_length=200, input_channels=4, latent_dim=64):
+    def __init__(self, seq_len=200, input_channels=4, latent_dim=64):
         super(CNNAutoencoder, self).__init__()
 
         # Encoder

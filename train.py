@@ -6,23 +6,27 @@ from torch.utils.data.sampler import SubsetRandomSampler
 import math
 import os
 import numpy as np
-from statistics import mean
 from time import time
 from datetime import datetime
 
-from bin.models import CNNAutoencoder
-from bin.datasets import RegressionDataset
+from bin.datasets import SeqDataset
 from bin.common import *
 from bin.models import *
 from argparser import *
 
 # TODO: poprawić results_header, validate
+    # dodać argument seq_len
+    # dodać do loggera info o rozmiarze latent_dim
+
+
 seq_len = 200
 
 batch_size, num_workers, num_epochs, acc_threshold, seq_len, namespace = args.batch_size, args.num_workers, args.num_epochs, args.acc_threshold, args.seq_len, args.namespace
+dim = args.dim
 
+# Set seed
 seed=args.seed
-torch.manual_seed(seed)  # set the random seed
+torch.manual_seed(seed)  
 np.random.seed(seed)
 
 network_name = "basic"
@@ -58,7 +62,7 @@ t0 = time()
 use_cuda, device = check_cuda(logger)
 noise = not args.no_noise
 
-dataset = RegressionDataset(filename=args.path+"/"+args.filename, noise=noise, seq_len=seq_len)
+dataset = SeqDataset(filename=args.path+"/"+args.filename, noise=noise, seq_len=seq_len)
 
 # write header of results table
 if not old_results:
@@ -79,8 +83,7 @@ chr_string = ['', '', '']
 for i, (n, ch, ind) in enumerate(zip(['train', 'valid', 'test'], chr_string,
                                      [train_ids, valid_ids, test_ids])):
     logger.info('\n{} set contains {} seqs {}:'.format(n, len(ind), ch))
-    # for classname, el in class_stage[i].items():
-    #     logger.info('{} - {}'.format(classname, len(el)))
+
     # Writing IDs for each split into file
     with open(os.path.join(args.output, '{}_{}.txt'.format(namespace, n)), 'w') as f:
         f.write('\n'.join([dataset.info[j] for j in ind]))
@@ -95,20 +98,19 @@ logger.info('\nTraining and validation datasets built in {:.2f} s'.format(time()
 
 
 num_batches = math.ceil(train_len / batch_size)
-model = network(dataset.seq_len)
+model = network(seq_len=dataset.seq_len, latent_dim=dim)
 
 if modelfile is not None:
     t0 = time()
     model.load_state_dict(torch.load(modelfile, map_location=torch.device(device)), strict=False)
     logger.info('\nModel from {} loaded in {:.2f} s'.format(modelfile, time() - t0))
 
-if network_name.lower() != 'basset':
-    if args.dropout_fc is not None:
-        network.dropout_fc = args.dropout_fc
-        logger.info('\nDropout-fc changed to {}'.format(args.dropout_fc))
-    if args.dropout_conv is not None:
-        network.dropout_conv = args.dropout_conv
-        logger.info('\nDropout-conv changed to {}'.format(args.dropout_conv))
+if args.dropout_fc is not None:
+    network.dropout_fc = args.dropout_fc
+    logger.info('\nDropout-fc changed to {}'.format(args.dropout_fc))
+if args.dropout_conv is not None:
+    network.dropout_conv = args.dropout_conv
+    logger.info('\nDropout-conv changed to {}'.format(args.dropout_conv))
 
 if optimizer_name == 'RMSprop':
     optimizer = optim_method(model.parameters(), lr=lr, weight_decay=weight_decay, momentum=momentum)
@@ -121,7 +123,6 @@ best_loss = math.inf
 
 
 # TRAINING LOOP
-# TODO: poprawić – w ogóle nie ma walidacji modelu w pętli??
 
 logger.info('\n--- TRAINING ---\nEpoch 0 is a data validation without training step')
 t = time()

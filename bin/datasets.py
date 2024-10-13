@@ -9,14 +9,7 @@ VALID_CHR=["13","14","15","16","17"]
 TEST_CHR=["18","19","20","21","22"]
 
 
-class RegressionDataset(Dataset):
-    """
-    Class for regression on ATAC data
-    
-    f_prefix is a prefix for 4 fasta_files with names prefix_pa.fa prefix_na.fa prefix_pi.fa and prefix_ni.fa
-    valid_chroms and test chroms are validation and test chromosomes - will be set aside
-
-    """    
+class SeqDataset(Dataset):   
     def __init__(self, filename, train_chr=TRAIN_CHR,valid_chr=VALID_CHR,test_chr=TEST_CHR, noise=True, seq_len=200):
         
         self.ids=[]
