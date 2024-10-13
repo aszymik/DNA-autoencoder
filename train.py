@@ -121,12 +121,14 @@ best_loss = math.inf
 
 
 # TRAINING LOOP
+# TODO: poprawić – w ogóle nie ma walidacji modelu w pętli??
 
 logger.info('\n--- TRAINING ---\nEpoch 0 is a data validation without training step')
 t = time()
 for epoch in range(num_epochs + 1):
     t0 = time()
     train_loss_reduced = 0.0
+    valid_loss_reduced = 0.0
     true, scores = [], []
     
     if epoch == num_epochs:
@@ -134,6 +136,8 @@ for epoch in range(num_epochs + 1):
         train_output_values = [[] for _ in range(seq_len)]
         valid_output_values = [[] for _ in range(seq_len)]
     
+    # Training loop
+    model.train() 
     for i, seqs in enumerate(train_loader):
         if use_cuda:
             seqs = seqs.cuda()
@@ -142,7 +146,6 @@ for epoch in range(num_epochs + 1):
         seqs = seqs.float()
 
         # Forward pass
-        model.train()
         optimizer.zero_grad()
         outputs = model(seqs)
         loss = loss_fn(outputs, seqs)  # Loss function compares output to input (reconstruction loss)
@@ -155,7 +158,7 @@ for epoch in range(num_epochs + 1):
         if epoch == num_epochs:
             # Store neuron outputs for the last epoch for analysis
             for j, outp in enumerate(outputs):
-                train_output_values[j].append(outp.cpu().numpy())
+                train_output_values[j].append(outp.detach().cpu().numpy())
 
         true += seqs.tolist()
         scores += outputs.tolist()
@@ -163,18 +166,42 @@ for epoch in range(num_epochs + 1):
         if i % 10 == 0:
             logger.info('Epoch {}, batch {}/{}'.format(epoch, i, num_batches))
     
+    # Validation loop 
+    model.eval()
+    with torch.no_grad():  # Disable gradient computation
+        for i, seqs in enumerate(valid_loader):
+            if use_cuda:
+                seqs = seqs.cuda()
+
+            seqs = seqs.float()
+
+            # Forward pass
+            outputs = model(seqs)
+            loss = loss_fn(outputs, seqs)  # Compute validation loss
+
+            valid_loss_reduced += loss.item()
+
+            if epoch == num_epochs:
+                # Store neuron outputs for the last epoch for analysis
+                for j, outp in enumerate(outputs):
+                    valid_output_values[j].append(outp.detach().cpu().numpy())
+
     # Adjust the learning rate if necessary
     if not args.no_adjust_lr:
         adjust_learning_rate(lr, epoch, optimizer)
 
     # Calculate and log the mean loss for the epoch
     train_loss_reduced = train_loss_reduced / num_batches
-    logger.info("Epoch {} finished in {:.2f} min\nTrain loss: {:1.3f}".format(epoch, (time() - t0) / 60, train_loss_reduced))
+    valid_loss_reduced = valid_loss_reduced / len(valid_loader)
+
+    logger.info("Epoch {} finished in {:.2f} min\nTrain loss: {:1.3f}\nValid loss: {:1.3f}".format(
+        epoch, (time() - t0) / 60, train_loss_reduced, valid_loss_reduced))
 
     # If it's the last epoch, save outputs for analysis
     if epoch == num_epochs:
         logger.info('Last epoch - saving outputs!')
         np.save(os.path.join(args.output, '{}_train_outputs'.format(namespace)), np.array(train_output_values))
+        np.save(os.path.join(args.output, '{}_valid_outputs'.format(namespace)), np.array(valid_output_values))
         torch.save(model.state_dict(), os.path.join(args.output, '{}_last.model'.format(namespace)))
 
     # Save the model if the reconstruction loss is lower than the best one so far
