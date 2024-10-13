@@ -194,27 +194,25 @@ for epoch in range(num_epochs + 1):
     train_loss_reduced = train_loss_reduced / num_batches
     valid_loss_reduced = valid_loss_reduced / len(valid_loader)
 
-    logger.info("Epoch {} finished in {:.2f} min\nTrain loss: {:1.3f}\nValid loss: {:1.3f}".format(
-        epoch, (time() - t0) / 60, train_loss_reduced, valid_loss_reduced))
-
     # If it's the last epoch, save outputs for analysis
     if epoch == num_epochs:
         logger.info('Last epoch - saving outputs!')
-        np.save(os.path.join(args.output, '{}_train_outputs'.format(namespace)), np.array(train_output_values))
-        np.save(os.path.join(args.output, '{}_valid_outputs'.format(namespace)), np.array(valid_output_values))
+        # Save the output values as object arrays
+        np.save(os.path.join(args.output, '{}_train_outputs'.format(namespace)), np.array(train_output_values, dtype=object))
+        np.save(os.path.join(args.output, '{}_valid_outputs'.format(namespace)), np.array(valid_output_values, dtype=object))
         torch.save(model.state_dict(), os.path.join(args.output, '{}_last.model'.format(namespace)))
 
+    # Write the results
+    write_results(results_table, columns, ['train', 'valid'], globals(), epoch)
+    logger.info("Epoch {} finished in {:.2f} min\nTrain loss: {:1.3f}\nValid loss: {:1.3f}".format(
+        epoch, (time() - t0) / 60, train_loss_reduced, valid_loss_reduced)) 
+
     # Save the model if the reconstruction loss is lower than the best one so far
-    if train_loss_reduced < best_loss and epoch < num_epochs:
+    if valid_loss_reduced < best_loss and epoch < num_epochs:
         torch.save(model.state_dict(), os.path.join(args.output, "{}_{}.model".format(namespace, epoch + 1)))
-        best_loss = train_loss_reduced
+        best_loss = valid_loss_reduced
 
 # Final log
 logger.info('Training for {} finished in {:.2f} min'.format(namespace, (time() - t) / 60))
 
-
-# Test
-# dummy_input = torch.randn(32, input_channels, input_length)  # (batch_size, channels, sequence_length)
-# output = model(dummy_input)
-# print(output.shape)  # Should output (batch_size, channels, sequence_length)
 
