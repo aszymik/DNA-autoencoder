@@ -21,13 +21,13 @@ class SeqDataset(Dataset):
         self.seq_len=seq_len
 
 
-        OHE=OHEncoder(noise=noise)
-        curr_id=0
+        OHE = OHEncoder(noise=noise)
+        curr_id = 0
         for SR in SeqIO.parse(filename,"fasta"):
-            encoded_seq=OHE(SR.seq)
+            encoded_seq = OHE(SR.seq)
             if not (encoded_seq is None) and len(SR.seq)==seq_len:
-                X=torch.tensor(encoded_seq)
-                # X=X.reshape(1,*X.size())
+                X = torch.tensor(encoded_seq)
+                X = X.reshape(1, *X.size())
                 # activity = float(SR.id.split('_')[-1])
                 # y = torch.tensor(activity)
                 # y = y.view(1)
