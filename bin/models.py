@@ -3,12 +3,12 @@ import math
 
 
 class CNNAutoencoder(nn.Module):
-    def __init__(self, seq_len=200, input_channels=4, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
+    def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
         super(CNNAutoencoder, self).__init__()
 
         # Encoder: Conv2d, BatchNorm2d, ReLU, MaxPool2d
         conv_modules = []
-        num_channels = [input_channels] + num_channels
+        num_channels = [1] + num_channels
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
             k = 4 if num == 0 else 1  # 4 for first layer to match your example
             conv_modules += [
@@ -46,7 +46,7 @@ class CNNAutoencoder(nn.Module):
         self.deconv_layers = nn.Sequential(*deconv_modules)
 
         # Final layer for output
-        self.final_layer = nn.ConvTranspose2d(in_channels=num_channels[1], out_channels=input_channels, kernel_size=(4, kernel_widths[0]), padding=(0, paddings[0]), output_padding=(0, pooling_widths[0] - 1))
+        self.final_layer = nn.ConvTranspose2d(in_channels=num_channels[1], out_channels=1, kernel_size=(4, kernel_widths[0]), padding=(0, paddings[0]), output_padding=(0, pooling_widths[0] - 1))
         self.output_activation = nn.Softmax(dim=1)  # Softmax over the channels
 
     def forward(self, x):
