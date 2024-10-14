@@ -1,8 +1,73 @@
 import torch.nn as nn
+import math
+
 
 class CNNAutoencoder(nn.Module):
-    def __init__(self, seq_len=200, input_channels=4, latent_dim=64):
+    def __init__(self, seq_len=200, input_channels=4, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
         super(CNNAutoencoder, self).__init__()
+
+        # Encoder: Conv2d, BatchNorm2d, ReLU, MaxPool2d
+        conv_modules = []
+        num_channels = [input_channels] + num_channels
+        for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
+            k = 4 if num == 0 else 1  # 4 for first layer to match your example
+            conv_modules += [
+                nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
+                nn.BatchNorm2d(out_ch),
+                nn.ReLU(),
+                nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
+            ]
+            seq_len = math.ceil(seq_len / pooling)  # Update seq_len for subsequent layers
+
+        self.conv_layers = nn.Sequential(*conv_modules)
+
+        # Fully connected layers for latent space
+        self.fc_input = 1 * seq_len * num_channels[-1]
+        self.encoder_fc = nn.Sequential(
+            nn.Linear(self.fc_input, latent_dim),
+            nn.ReLU()
+        )
+
+        # Decoder: Fully connected and ConvTranspose2d to recover original dimensions
+        self.decoder_fc = nn.Sequential(
+            nn.Linear(latent_dim, self.fc_input),
+            nn.ReLU()
+        )
+
+        # Decoder: Transposed Conv2d layers to reverse the encoding
+        deconv_modules = []
+        for num, (in_ch, out_ch, kernel, padding, pooling) in reversed(list(enumerate(zip(num_channels[1:], num_channels[:-1], kernel_widths, paddings, pooling_widths)))):
+            k = 4 if num == 0 else 1
+            deconv_modules += [
+                nn.ConvTranspose2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding), output_padding=(0, pooling - 1) if pooling > 1 else 0),
+                nn.BatchNorm2d(out_ch),
+                nn.ReLU()
+            ]
+        self.deconv_layers = nn.Sequential(*deconv_modules)
+
+        # Final layer for output
+        self.final_layer = nn.ConvTranspose2d(in_channels=num_channels[1], out_channels=input_channels, kernel_size=(4, kernel_widths[0]), padding=(0, paddings[0]), output_padding=(0, pooling_widths[0] - 1))
+        self.output_activation = nn.Softmax(dim=1)  # Softmax over the channels
+
+    def forward(self, x):
+        # Encoder forward pass
+        x = self.conv_layers(x)
+        x = x.view(x.size(0), -1)  # Flatten
+        x = self.encoder_fc(x)
+
+        # Decoder forward pass
+        x = self.decoder_fc(x)
+        x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
+        x = self.deconv_layers(x)
+        x = self.final_layer(x)
+        return self.output_activation(x)
+
+
+class CNN1DAutoencoder(nn.Module):
+    def __init__(self, seq_len=200, input_channels=4, latent_dim=64):
+        super(CNN1DAutoencoder, self).__init__()
+
+        # zmienić na 2D, kernel 4
 
         # Encoder
         self.encoder = nn.Sequential(
