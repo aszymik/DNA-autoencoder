@@ -10,7 +10,7 @@ TEST_CHR=["18","19","20","21","22"]
 
 
 class SeqDataset(Dataset):   
-    def __init__(self, filename, train_chr=TRAIN_CHR,valid_chr=VALID_CHR,test_chr=TEST_CHR, noise=True, seq_len=200):
+    def __init__(self, filename, train_chr=TRAIN_CHR, valid_chr=VALID_CHR, test_chr=TEST_CHR, noise=True, seq_len=200):
         
         self.ids=[]
         self.train_ids=[]
@@ -25,13 +25,9 @@ class SeqDataset(Dataset):
         curr_id = 0
         for SR in SeqIO.parse(filename,"fasta"):
             encoded_seq = OHE(SR.seq)
-            if not (encoded_seq is None) and len(SR.seq)==seq_len:
+            if not (encoded_seq is None) and len(SR.seq) == seq_len:
                 X = torch.tensor(encoded_seq)
-                # X = X.reshape(1, *X.size())
-                X = X.unsqueeze(1)  # add a dimension for height, so shape becomes (channels, 1, seq_len)
-                # activity = float(SR.id.split('_')[-1])
-                # y = torch.tensor(activity)
-                # y = y.view(1)
+                X = X.unsqueeze(1)  # shape becomes [4, 1, seq_len]
 
                 chrom=SR.id.split(":")[-2]
                 self.info[curr_id]=SR.id
@@ -39,20 +35,20 @@ class SeqDataset(Dataset):
                     self.ids.append(curr_id)
                     self.train_ids.append(curr_id)
                     # self.tensors[curr_id]=X,y
-                    self.tensors[curr_id]=X
-                    curr_id+=1
+                    self.tensors[curr_id] = X
+                    curr_id += 1
                 elif chrom in valid_chr:
                     self.ids.append(curr_id)
                     self.valid_ids.append(curr_id)
                     # self.tensors[curr_id]=X,y
-                    self.tensors[curr_id]=X
-                    curr_id+=1
+                    self.tensors[curr_id] = X
+                    curr_id += 1
                 elif chrom in test_chr:
                     self.ids.append(curr_id)
                     self.test_ids.append(curr_id)
                     # self.tensors[curr_id]=X,y
-                    self.tensors[curr_id]=X
-                    curr_id+=1
+                    self.tensors[curr_id] = X
+                    curr_id += 1
                 else:
                     print("wrong chromosome",repr(chrom),SR.id,chrom in TRAIN_CHR)
             else: # not encoded
