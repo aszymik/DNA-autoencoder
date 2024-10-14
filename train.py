@@ -222,8 +222,8 @@ for epoch in range(num_epochs + 1):
     # Store the loss values in a format expected by `write_results`
     globals()['train_losses'] = [avg_train_loss]
     globals()['valid_losses'] = [avg_valid_loss]
-    globals()['train_accuracy'] = [train_accuracy]
-    globals()['valid_accuracy'] = [valid_accuracy]
+    globals()['train_accuracy'] = train_accuracy
+    globals()['valid_accuracy'] = valid_accuracy
 
 
     # If it's the last epoch, save outputs for analysis
@@ -237,7 +237,7 @@ for epoch in range(num_epochs + 1):
     # Write the results
     write_results(results_table, columns, ['train', 'valid'], globals(), epoch)
     logger.info("Epoch {} finished in {:.2f} min\nTrain loss: {:1.3f}\tTrain accuracy: {:1.3f}\nValid loss: {:1.3f}\tValid accuracy: {:1.3f}".format(
-        epoch, (time() - t0) / 60, avg_train_loss, avg_valid_loss, train_accuracy, valid_accuracy)) 
+        epoch, (time() - t0) / 60, avg_train_loss, train_accuracy, avg_valid_loss,  valid_accuracy)) 
 
     # Save the model if the reconstruction loss is lower than the best one so far
     if avg_valid_loss < best_loss and epoch < num_epochs:
