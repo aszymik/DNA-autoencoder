@@ -6,9 +6,12 @@ class CNNAutoencoder(nn.Module):
     def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
         super(CNNAutoencoder, self).__init__()
 
+        num_channels = [1] + num_channels
+        self.num_channels = num_channels
+        self.seq_len = seq_len
+
         # Encoder: Conv2d, BatchNorm2d, ReLU, MaxPool2d
         conv_modules = []
-        num_channels = [1] + num_channels
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
             k = 4 if num == 0 else 1  # 4 for first layer to match your example
             conv_modules += [
@@ -49,6 +52,19 @@ class CNNAutoencoder(nn.Module):
         self.final_layer = nn.ConvTranspose2d(in_channels=num_channels[1], out_channels=1, kernel_size=(4, kernel_widths[0]), padding=(0, paddings[0]), output_padding=(0, pooling_widths[0] - 1))
         self.output_activation = nn.Softmax(dim=1)  # Softmax over the channels
 
+    # def forward(self, x):
+    #     # Encoder forward pass
+    #     x = self.conv_layers(x)
+    #     x = x.view(x.size(0), -1)  # Flatten
+    #     x = self.encoder_fc(x)
+
+    #     # Decoder forward pass
+    #     x = self.decoder_fc(x)
+    #     x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
+    #     x = self.deconv_layers(x)
+    #     x = self.final_layer(x)
+    #     return self.output_activation(x)
+    
     def forward(self, x):
         # Encoder forward pass
         x = self.conv_layers(x)
@@ -57,7 +73,8 @@ class CNNAutoencoder(nn.Module):
 
         # Decoder forward pass
         x = self.decoder_fc(x)
-        x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
+        batch_size = x.size(0)
+        x = x.view(batch_size, self.num_channels[-1], 1, self.seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
         x = self.final_layer(x)
         return self.output_activation(x)
