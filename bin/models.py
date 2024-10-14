@@ -39,7 +39,7 @@ class CNNAutoencoder(nn.Module):
 
         # Decoder: Transposed Conv2d layers to reverse the encoding
         deconv_modules = []
-        for num, (in_ch, out_ch, kernel, padding, pooling) in reversed(list(enumerate(zip(num_channels[1:], num_channels[:-1], kernel_widths, paddings, pooling_widths)))):
+        for num, (in_ch, out_ch, kernel, padding, pooling) in reversed(list(enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)))):
             k = 4 if num == 0 else 1
             deconv_modules += [
                 nn.ConvTranspose2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding), output_padding=(0, pooling - 1) if pooling > 1 else 0),
