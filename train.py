@@ -129,8 +129,11 @@ t = time()
 for epoch in range(num_epochs + 1):
     t0 = time()
     train_loss = 0.0
-    correct_bases = 0
-    total_bases = 0
+    valid_loss = 0.0
+    train_correct_bases = 0
+    valid_correct_bases = 0
+    train_total_bases = 0
+    valid_total_bases = 0
     # true, scores = [], []
     
     if epoch == num_epochs:
@@ -158,9 +161,12 @@ for epoch in range(num_epochs + 1):
         train_loss += loss.item()
 
         # Calculate base-level accuracy
-        correct = calculate_accuracy(outputs, seqs)
-        correct_bases += correct * seqs.size(0) * seqs.size(2)  # Total correct bases in this batch
-        total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
+        # correct = calculate_accuracy(outputs, seqs)
+        _, predicted = torch.max(outputs, dim=1)
+        _, true = torch.max(seqs, dim=1)
+        correct = (predicted == true).sum().item()
+        train_correct_bases += correct  # Total correct bases in this batch
+        train_total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
 
 
         if epoch == num_epochs:
@@ -176,10 +182,6 @@ for epoch in range(num_epochs + 1):
     
     # Validation loop 
     model.eval()
-    valid_loss = 0.0
-    correct_bases = 0
-    total_bases = 0
-
     with torch.no_grad():  # Disable gradient computation
         for i, seqs in enumerate(valid_loader):
             if use_cuda:
@@ -192,9 +194,11 @@ for epoch in range(num_epochs + 1):
             loss = loss_fn(outputs, seqs)  # Compute validation loss
 
             valid_loss += loss.item()
-            correct = calculate_accuracy(outputs, seqs)
-            correct_bases += correct * seqs.size(0) * seqs.size(2)
-            total_bases += seqs.size(0) * seqs.size(2)
+            _, predicted = torch.max(outputs, dim=1)
+            _, true = torch.max(seqs, dim=1)
+            correct = (predicted == true).sum().item()
+            valid_correct_bases += correct  # Total correct bases in this batch
+            valid_total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
 
             if epoch == num_epochs:
                 # Store neuron outputs for the last epoch for analysis
@@ -209,8 +213,8 @@ for epoch in range(num_epochs + 1):
     avg_train_loss = train_loss / len(train_loader)
     avg_valid_loss = valid_loss / len(valid_loader)
 
-    train_accuracy = correct_bases / total_bases
-    valid_accuracy = correct_bases / total_bases
+    train_accuracy = train_correct_bases / train_total_bases
+    valid_accuracy = valid_correct_bases / valid_total_bases
 
     # Store the loss values in a format expected by `write_results`
     globals()['train_losses'] = [avg_train_loss]
@@ -233,7 +237,7 @@ for epoch in range(num_epochs + 1):
         epoch, (time() - t0) / 60, avg_train_loss, avg_valid_loss, train_accuracy, valid_accuracy)) 
 
     # Save the model if the reconstruction loss is lower than the best one so far
-    if valid_loss < best_loss and epoch < num_epochs:
+    if avg_valid_loss < best_loss and epoch < num_epochs:
         torch.save(model.state_dict(), os.path.join(args.output, "{}_{}.model".format(namespace, epoch + 1)))
         best_loss = valid_loss
 
