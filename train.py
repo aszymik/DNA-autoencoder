@@ -168,10 +168,6 @@ for epoch in range(num_epochs + 1):
         train_correct_bases += correct  # Total correct bases in this batch
         train_total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
 
-        print('Train correct bases: ', train_correct_bases)
-        print('Train total bases: ', train_total_bases)
-
-
         if epoch == num_epochs:
             # Store neuron outputs for the last epoch for analysis
             for j, outp in enumerate(outputs):
