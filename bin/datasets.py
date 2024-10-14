@@ -28,8 +28,7 @@ class SeqDataset(Dataset):
             if not (encoded_seq is None) and len(SR.seq) == seq_len:
                 X = torch.tensor(encoded_seq)
                 # X = X.unsqueeze(0)  # shape becomes [1, batch_size, seq_len]
-                X = X.reshape(1, *X.size())  # torch.Size([4, 200])
-                print(X.shape)
+                X = X.reshape(1, *X.size())  # [1, 4, 200]
 
                 chrom=SR.id.split(":")[-2]
                 self.info[curr_id]=SR.id
