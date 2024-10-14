@@ -96,6 +96,25 @@ class OHEncoder:
         return ''.join([el[0] for el in self.encoder.inverse_transform(array.T)])
 
 
+def calculate_accuracy(outputs, inputs):
+    """
+    outputs: The reconstructed sequences from the autoencoder (batch_size, 4, seq_len)
+    inputs: The original input sequences (batch_size, 4, seq_len)
+    Returns: Accuracy as the percentage of correctly reconstructed bases
+    """
+    # Predicted base is the argmax across the 4 channels (A, C, G, T)
+    _, predicted = torch.max(outputs, dim=1)  # Get the index of the max log-probability
+
+    # True base is the argmax of the input one-hot encoding
+    _, true = torch.max(inputs, dim=1)
+
+    # Compare predicted to true and count correct predictions
+    correct = (predicted == true).sum().item()
+    total = torch.numel(true)
+
+    return correct / total  # Return accuracy as a fraction
+
+
 def make_chrstr(chrlist):
 
     cl = chrlist.copy()

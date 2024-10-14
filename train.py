@@ -128,9 +128,10 @@ logger.info('\n--- TRAINING ---\nEpoch 0 is a data validation without training s
 t = time()
 for epoch in range(num_epochs + 1):
     t0 = time()
-    train_loss_reduced = 0.0
-    valid_loss_reduced = 0.0
-    true, scores = [], []
+    train_loss = 0.0
+    correct_bases = 0
+    total_bases = 0
+    # true, scores = [], []
     
     if epoch == num_epochs:
         # If this is the last epoch, store outputs for inspection
@@ -154,21 +155,31 @@ for epoch in range(num_epochs + 1):
         optimizer.step()
 
         # Track total loss for the epoch
-        train_loss_reduced += loss.item()
+        train_loss += loss.item()
+
+        # Calculate base-level accuracy
+        correct = calculate_accuracy(outputs, seqs)
+        correct_bases += correct * seqs.size(0) * seqs.size(2)  # Total correct bases in this batch
+        total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
+
 
         if epoch == num_epochs:
             # Store neuron outputs for the last epoch for analysis
             for j, outp in enumerate(outputs):
                 train_output_values[j].append(outp.detach().cpu().numpy())
 
-        true += seqs.tolist()
-        scores += outputs.tolist()
+        # true += seqs.tolist()
+        # scores += outputs.tolist()
 
         if i % 10 == 0:
             logger.info('Epoch {}, batch {}/{}'.format(epoch, i, num_batches))
     
     # Validation loop 
     model.eval()
+    valid_loss = 0.0
+    correct_bases = 0
+    total_bases = 0
+
     with torch.no_grad():  # Disable gradient computation
         for i, seqs in enumerate(valid_loader):
             if use_cuda:
@@ -180,7 +191,10 @@ for epoch in range(num_epochs + 1):
             outputs = model(seqs)
             loss = loss_fn(outputs, seqs)  # Compute validation loss
 
-            valid_loss_reduced += loss.item()
+            valid_loss += loss.item()
+            correct = calculate_accuracy(outputs, seqs)
+            correct_bases += correct * seqs.size(0) * seqs.size(2)
+            total_bases += seqs.size(0) * seqs.size(2)
 
             if epoch == num_epochs:
                 # Store neuron outputs for the last epoch for analysis
@@ -192,12 +206,17 @@ for epoch in range(num_epochs + 1):
         adjust_learning_rate(lr, epoch, optimizer)
 
     # Calculate and log the mean loss for the epoch
-    train_loss_reduced = train_loss_reduced / num_batches
-    valid_loss_reduced = valid_loss_reduced / len(valid_loader)
+    avg_train_loss = train_loss / len(train_loader)
+    avg_valid_loss = valid_loss / len(valid_loader)
+
+    train_accuracy = correct_bases / total_bases
+    valid_accuracy = correct_bases / total_bases
 
     # Store the loss values in a format expected by `write_results`
-    globals()['train_losses'] = [train_loss_reduced]
-    globals()['valid_losses'] = [valid_loss_reduced]
+    globals()['train_losses'] = [avg_train_loss]
+    globals()['valid_losses'] = [avg_valid_loss]
+    globals()['train_accuracy'] = [train_accuracy]
+    globals()['valid_accuracy'] = [valid_accuracy]
 
 
     # If it's the last epoch, save outputs for analysis
@@ -210,13 +229,13 @@ for epoch in range(num_epochs + 1):
 
     # Write the results
     write_results(results_table, columns, ['train', 'valid'], globals(), epoch)
-    logger.info("Epoch {} finished in {:.2f} min\nTrain loss: {:1.3f}\nValid loss: {:1.3f}".format(
-        epoch, (time() - t0) / 60, train_loss_reduced, valid_loss_reduced)) 
+    logger.info("Epoch {} finished in {:.2f} min\nTrain loss: {:1.3f}\tTrain accuracy: {:1.3f}\nValid loss: {:1.3f}\tValid accuracy: {:1.3f}".format(
+        epoch, (time() - t0) / 60, avg_train_loss, avg_valid_loss, train_accuracy, valid_accuracy)) 
 
     # Save the model if the reconstruction loss is lower than the best one so far
-    if valid_loss_reduced < best_loss and epoch < num_epochs:
+    if valid_loss < best_loss and epoch < num_epochs:
         torch.save(model.state_dict(), os.path.join(args.output, "{}_{}.model".format(namespace, epoch + 1)))
-        best_loss = valid_loss_reduced
+        best_loss = valid_loss
 
 # Final log
 logger.info('Training for {} finished in {:.2f} min'.format(namespace, (time() - t) / 60))
