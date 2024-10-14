@@ -28,7 +28,7 @@ class SeqDataset(Dataset):
             if not (encoded_seq is None) and len(SR.seq) == seq_len:
                 X = torch.tensor(encoded_seq)
                 # X = X.unsqueeze(0)  # shape becomes [1, batch_size, seq_len]
-                X.reshape(1, *X.size())
+                X = X.reshape(1, *X.size())  # torch.Size([4, 200])
                 print(X.shape)
 
                 chrom=SR.id.split(":")[-2]
