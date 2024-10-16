@@ -10,6 +10,13 @@ class CNNAutoencoder(nn.Module):
         self.num_channels = num_channels
         self.seq_len = seq_len
 
+        # Track compressed sequence length after pooling
+        compressed_seq_len = seq_len
+        for pooling in pooling_widths:
+            compressed_seq_len = math.ceil(compressed_seq_len / pooling)
+        self.compressed_seq_len = compressed_seq_len  # Final compressed length after encoder
+
+
         # Encoder: Conv2d, BatchNorm2d, ReLU, MaxPool2d
         conv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
@@ -20,8 +27,6 @@ class CNNAutoencoder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
-            seq_len = math.ceil(seq_len / pooling)  # Update seq_len for subsequent layers
-
         self.conv_layers = nn.Sequential(*conv_modules)
 
         # Fully connected layers for latent space
@@ -59,7 +64,7 @@ class CNNAutoencoder(nn.Module):
         # Decoder forward pass
         x = self.decoder_fc(x)
         # x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
-        x = x.view(x.size(0), self.num_channels[-1], 1, self.seq_len)
+        x = x.view(x.size(0), self.num_channels[-1], 1, self.compressed_seq_len)
         x = self.deconv_layers(x)
         x = self.final_layer(x)
         return self.output_activation(x)  
