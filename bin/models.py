@@ -58,7 +58,8 @@ class CNNAutoencoder(nn.Module):
 
         # Decoder forward pass
         x = self.decoder_fc(x)
-        x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
+        # x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
+        x = x.view(x.size(0), self.num_channels[-1], 1, self.seq_len)
         x = self.deconv_layers(x)
         x = self.final_layer(x)
         return self.output_activation(x)  
