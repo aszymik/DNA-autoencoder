@@ -37,34 +37,19 @@ class CNNAutoencoder(nn.Module):
             nn.ReLU()
         )
 
-        # Decoder: Transposed Conv2d layers to reverse the encoding
         deconv_modules = []
-        for num, (in_ch, out_ch, kernel, padding, pooling) in reversed(list(enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)))):
-            k = 4 if num == 0 else 1
+        for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[:-1]), reversed(num_channels[1:]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
+            k = 4 if num == (len(num_channels)-2) else 1
             deconv_modules += [
-                nn.ConvTranspose2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding), output_padding=(0, pooling - 1) if pooling > 1 else 0),
+                nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), padding=(0, padding), output_padding=(0, pooling - 1) if pooling > 1 else 0),
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU()
             ]
         self.deconv_layers = nn.Sequential(*deconv_modules)
 
         # Final layer for output
-        self.final_layer = nn.ConvTranspose2d(in_channels=num_channels[1], out_channels=1, kernel_size=(4, kernel_widths[0]), padding=(0, paddings[0]), output_padding=(0, pooling_widths[0] - 1))
         self.output_activation = nn.Softmax(dim=1)  # Softmax over the channels
 
-    # def forward(self, x):
-    #     # Encoder forward pass
-    #     x = self.conv_layers(x)
-    #     x = x.view(x.size(0), -1)  # Flatten
-    #     x = self.encoder_fc(x)
-
-    #     # Decoder forward pass
-    #     x = self.decoder_fc(x)
-    #     x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
-    #     x = self.deconv_layers(x)
-    #     x = self.final_layer(x)
-    #     return self.output_activation(x)
-    
     def forward(self, x):
         # Encoder forward pass
         x = self.conv_layers(x)
@@ -73,11 +58,10 @@ class CNNAutoencoder(nn.Module):
 
         # Decoder forward pass
         x = self.decoder_fc(x)
-        batch_size = x.size(0)
         x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
         x = self.final_layer(x)
-        return self.output_activation(x)
+        return self.output_activation(x)  
 
 
 class CNN1DAutoencoder(nn.Module):
