@@ -47,13 +47,17 @@ class CNNAutoencoder(nn.Module):
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[:-1]), reversed(num_channels[1:]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
             k = 4 if num == (len(num_channels)-2) else 1
             deconv_modules += [
-                nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), padding=(0, padding), output_padding=(0, pooling - 1) if pooling > 1 else (0,0)),
+                # nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), padding=(0, padding), output_padding=(0, pooling - 1) if pooling > 1 else (0,0)),
                 # nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), output_padding=(0, pooling - 1) if pooling > 1 else (0,0)),
-                # nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), padding=(0, padding)),
+                nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU()
             ]
-        self.deconv_layers = nn.Sequential(*deconv_modules)
+        
+        self.deconv1 = deconv_modules[0]
+        self.deconv2 = deconv_modules[1]
+        self.deconv3 = deconv_modules[2]
+        # self.deconv_layers = nn.Sequential(*deconv_modules)
 
         # Final layer for output
         self.output_activation = nn.Softmax(dim=1)  # Softmax over the channels
@@ -72,14 +76,17 @@ class CNNAutoencoder(nn.Module):
         # Decoder forward pass
         x = self.decoder_fc(x)
         print(f'shape after decoder fc: {x.shape}')
-        # x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
-        x = x.view(x.size(0), -1, 1, self.compressed_seq_len)
+
+        x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         print(f'shape before deconv: {x.shape}')
-        # x = x.view(x.size(0), self.num_channels[-1], 1, self.compressed_seq_len)
-        x = self.deconv_layers(x)
-        print(f'shape after deconv: {x.shape}')
-        x = self.final_layer(x)
-        print(f'shape after final fc: {x.shape}')
+        # x = self.deconv_layers(x)
+
+        x = self.deconv1(x)
+        print(f'shape after deconv 1: {x.shape}')
+        x = self.deconv2(x)
+        print(f'shape after deconv 2: {x.shape}')
+        x = self.deconv3(x)
+        print(f'shape after deconv 3: {x.shape}')
         return self.output_activation(x)  
 
 
