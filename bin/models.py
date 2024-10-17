@@ -7,8 +7,8 @@ class CNNAutoencoder(nn.Module):
         super(CNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
-        self.num_channels = num_channels
-        self.seq_len = seq_len
+        # self.num_channels = num_channels
+        # self.seq_len = seq_len
 
         # Track compressed sequence length after pooling in the encoder
         compressed_seq_len = seq_len
@@ -43,21 +43,28 @@ class CNNAutoencoder(nn.Module):
 
         deconv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
-            k = 4 if num == (len(num_channels)-2) else 1
-            deconv_modules += [
-                nn.ConvTranspose2d(in_channels=in_ch, 
-                                   out_channels=out_ch, 
-                                   kernel_size=(k, kernel), 
-                                   stride=(1, pooling), 
-                                   padding=(0, padding),
-                                   output_padding=(0, pooling - 1) if pooling > 1 else 0),
-                nn.BatchNorm2d(out_ch),
-                nn.ReLU()
-            ]
+            if num < (len(num_channels)-2):
+                deconv_modules += [
+                    nn.ConvTranspose2d(in_channels=in_ch, 
+                                       out_channels=out_ch, 
+                                       kernel_size=(1, kernel), 
+                                       stride=(1, pooling), 
+                                       padding=(0, padding),
+                                       output_padding=(0, pooling - 1) if pooling > 1 else 0),
+                    nn.BatchNorm2d(out_ch),
+                    nn.ReLU()
+                ]
+            else:
+                deconv_modules += [
+                    nn.ConvTranspose2d(in_channels=in_ch, 
+                                       out_channels=out_ch, 
+                                       kernel_size=(4, kernel), 
+                                       stride=(1, pooling), 
+                                       padding=(0, padding),
+                                       output_padding=(0, pooling - 1) if pooling > 1 else 0),
+                    nn.Softmax(dim=1)  # output activation
+                ]
         self.deconv_layers = nn.Sequential(*deconv_modules)
-
-        # Final layer for output
-        self.output_activation = nn.Softmax(dim=1)  # Softmax over the channels
 
     def forward(self, x):
         # Encoder forward pass
@@ -70,8 +77,7 @@ class CNNAutoencoder(nn.Module):
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
         print(x)
-        print(self.output_activation(x))
-        return self.output_activation(x)  
+        return x
 
 
 class CNN1DAutoencoder(nn.Module):
