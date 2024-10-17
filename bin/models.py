@@ -7,8 +7,8 @@ class CNNAutoencoder(nn.Module):
         super(CNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
-        # self.num_channels = num_channels
-        # self.seq_len = seq_len
+        self.num_channels = num_channels
+        self.seq_len = seq_len
 
         # Track compressed sequence length after pooling in the encoder
         compressed_seq_len = seq_len
@@ -76,7 +76,6 @@ class CNNAutoencoder(nn.Module):
         x = self.decoder_fc(x)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
-        print(self.output_activation(x))
         return self.output_activation(x)
 
 
