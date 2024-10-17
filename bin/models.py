@@ -22,8 +22,6 @@ class CNNAutoencoder(nn.Module):
         conv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
             k = 4 if num == 0 else 1  # 4 for first layer to match your example
-            print(f'input: {in_ch}')
-            print(f'output: {out_ch}')
             conv_modules += [[
                 nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
@@ -53,7 +51,9 @@ class CNNAutoencoder(nn.Module):
         deconv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
             k = 4 if num == (len(num_channels)-2) else 1
-            deconv_modules += [
+            print(f'input: {in_ch}')
+            print(f'output: {out_ch}')
+            deconv_modules += [[
                 nn.ConvTranspose2d(in_channels=in_ch, 
                                    out_channels=out_ch, 
                                    kernel_size=(k, kernel), 
@@ -63,11 +63,11 @@ class CNNAutoencoder(nn.Module):
                                    # output_padding=(0, padding))
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU()
-            ]
+            ]] # tak samo usunąć podwójną listę
         
-        self.deconv1 = deconv_modules[0]
-        self.deconv2 = deconv_modules[1]
-        self.deconv3 = deconv_modules[2]
+        self.deconv1 = nn.Sequential(*deconv_modules[0])
+        self.deconv2 = nn.Sequential(*deconv_modules[1])
+        self.deconv3 = nn.Sequential(*deconv_modules[2])
         # self.deconv_layers = nn.Sequential(*deconv_modules)
 
         # Final layer for output
