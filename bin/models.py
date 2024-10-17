@@ -58,9 +58,8 @@ class CNNAutoencoder(nn.Module):
                                    out_channels=out_ch, 
                                    kernel_size=(k, kernel), 
                                    stride=(1, pooling), 
-                                   # padding=(0, padding),
+                                   padding=(0, padding),
                                    output_padding=(0, pooling - 1) if pooling > 1 else 0),
-                                   # output_padding=(0, padding))
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU()
             ]] # tak samo usunąć podwójną listę
