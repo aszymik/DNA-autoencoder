@@ -64,7 +64,7 @@ class CNNAutoencoder(nn.Module):
                                        output_padding=(0, pooling - 1) if pooling > 1 else 0),
                 ]
         self.deconv_layers = nn.Sequential(*deconv_modules)
-        self.output_activation = nn.Softmax(dim=1)
+        self.output_activation = nn.Softmax(dim=2)
 
     def forward(self, x):
         # Encoder forward pass
@@ -76,6 +76,7 @@ class CNNAutoencoder(nn.Module):
         x = self.decoder_fc(x)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
+        print(self.output_activation(x))
         return self.output_activation(x)
 
 
