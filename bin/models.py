@@ -70,9 +70,13 @@ class CNNAutoencoder(nn.Module):
         x = self.decoder_fc(x)
         print(f'shape after decoder fc: {x.shape}')
         # x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
+        x = x.view(x.size(0), -1, 1, self.compressed_seq_len)
+        print(f'shape before deconv: {x.shape}')
         # x = x.view(x.size(0), self.num_channels[-1], 1, self.compressed_seq_len)
         x = self.deconv_layers(x)
+        print(f'shape after deconv: {x.shape}')
         x = self.final_layer(x)
+        print(f'shape after final fc: {x.shape}')
         return self.output_activation(x)  
 
 
