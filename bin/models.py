@@ -58,6 +58,7 @@ class CNNAutoencoder(nn.Module):
 
     def forward(self, x):
         # Encoder forward pass
+        print(f'shape at the beginning: {x.shape}')
         x = self.conv_layers(x)
         print(f'shape after convolution: {x.shape}')
         x = x.view(x.size(0), -1)  # Flatten
