@@ -26,11 +26,6 @@ class CNNAutoencoder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
-        
-        # self.conv1 = nn.Sequential(*conv_modules[0])
-        # self.conv2 = nn.Sequential(*conv_modules[1])
-        # self.conv3 = nn.Sequential(*conv_modules[2])
-
         self.conv_layers = nn.Sequential(*conv_modules)
 
         # Fully connected layers for latent space
@@ -49,8 +44,6 @@ class CNNAutoencoder(nn.Module):
         deconv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
             k = 4 if num == (len(num_channels)-2) else 1
-            print(f'input: {in_ch}')
-            print(f'output: {out_ch}')
             deconv_modules += [
                 nn.ConvTranspose2d(in_channels=in_ch, 
                                    out_channels=out_ch, 
@@ -61,10 +54,6 @@ class CNNAutoencoder(nn.Module):
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU()
             ]
-        
-        # self.deconv1 = nn.Sequential(*deconv_modules[0])
-        # self.deconv2 = nn.Sequential(*deconv_modules[1])
-        # self.deconv3 = nn.Sequential(*deconv_modules[2])
         self.deconv_layers = nn.Sequential(*deconv_modules)
 
         # Final layer for output
@@ -80,7 +69,7 @@ class CNNAutoencoder(nn.Module):
         x = self.decoder_fc(x)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
-
+        print(x)
         print(self.output_activation(x))
         return self.output_activation(x)  
 
