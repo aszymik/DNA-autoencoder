@@ -29,9 +29,9 @@ class CNNAutoencoder(nn.Module):
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
         
-        self.conv1 = conv_modules[0]
-        self.conv2 = conv_modules[1]
-        self.conv3 = conv_modules[2]
+        self.conv1 = nn.Sequential(*conv_modules[0])
+        self.conv2 = nn.Sequential(*conv_modules[1])
+        self.conv3 = nn.Sequential(*conv_modules[2])
 
         # self.conv_layers = nn.Sequential(*conv_modules)
 
