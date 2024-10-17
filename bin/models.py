@@ -49,13 +49,11 @@ class CNNAutoencoder(nn.Module):
         )
 
         deconv_modules = []
-        for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[:-1]), reversed(num_channels[1:]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
+        for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
             k = 4 if num == (len(num_channels)-2) else 1
             deconv_modules += [
-                # nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), padding=(0, padding), output_padding=(0, pooling - 1) if pooling > 1 else (0,0)),
-                # nn.ConvTranspose2d(in_channels=out_ch, out_channels=in_ch, kernel_size=(k, kernel), output_padding=(0, pooling - 1) if pooling > 1 else (0,0)),
-                nn.ConvTranspose2d(in_channels=out_ch, 
-                                   out_channels=in_ch, 
+                nn.ConvTranspose2d(in_channels=in_ch, 
+                                   out_channels=out_ch, 
                                    kernel_size=(k, kernel), 
                                    stride=(1, pooling), 
                                    padding=(0, padding),
