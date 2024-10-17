@@ -22,12 +22,12 @@ class CNNAutoencoder(nn.Module):
         conv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
             k = 4 if num == 0 else 1  # 4 for first layer to match your example
-            conv_modules += [
+            conv_modules += [[
                 nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
-            ]
+            ]]  # potem usunąć podwójną listę
         
         self.conv1 = nn.Sequential(*conv_modules[0])
         self.conv2 = nn.Sequential(*conv_modules[1])
