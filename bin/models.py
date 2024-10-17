@@ -28,7 +28,12 @@ class CNNAutoencoder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
-        self.conv_layers = nn.Sequential(*conv_modules)
+        
+        self.conv1 = conv_modules[0]
+        self.conv2 = conv_modules[1]
+        self.conv3 = conv_modules[2]
+
+        # self.conv_layers = nn.Sequential(*conv_modules)
 
         # Fully connected layers for latent space
         self.fc_input = self.compressed_seq_len * num_channels[-1]
@@ -64,29 +69,37 @@ class CNNAutoencoder(nn.Module):
 
     def forward(self, x):
         # Encoder forward pass
-        print(f'shape at the beginning: {x.shape}')
-        x = self.conv_layers(x)
-        print(f'shape after convolution: {x.shape}')
+        print(f'at the beginning: {x.shape}')
+        # x = self.conv_layers(x)
+ 
+        x = self.conv1(x)
+        print(f'after conv 1: {x.shape}')
+        x = self.conv2(x)
+        print(f'after conv 2: {x.shape}')
+        x = self.conv3(x)
+        print(f'after conv 3: {x.shape}')
+
+
         x = x.view(x.size(0), -1)  # Flatten
-        print(f'shape before encoder fc: {x.shape}')
+        print(f'before encoder fc: {x.shape}')
 
         x = self.encoder_fc(x)
-        print(f'shape after encoder fc: {x.shape}')
+        print(f'after encoder fc: {x.shape}')
 
         # Decoder forward pass
         x = self.decoder_fc(x)
-        print(f'shape after decoder fc: {x.shape}')
+        print(f'after decoder fc: {x.shape}')
 
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
-        print(f'shape before deconv: {x.shape}')
+        print(f'before deconv: {x.shape}')
         # x = self.deconv_layers(x)
 
         x = self.deconv1(x)
-        print(f'shape after deconv 1: {x.shape}')
+        print(f'after deconv 1: {x.shape}')
         x = self.deconv2(x)
-        print(f'shape after deconv 2: {x.shape}')
+        print(f'after deconv 2: {x.shape}')
         x = self.deconv3(x)
-        print(f'shape after deconv 3: {x.shape}')
+        print(f'after deconv 3: {x.shape}')
         return self.output_activation(x)  
 
 
