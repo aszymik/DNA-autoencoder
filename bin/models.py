@@ -22,6 +22,8 @@ class CNNAutoencoder(nn.Module):
         conv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
             k = 4 if num == 0 else 1  # 4 for first layer to match your example
+            print(f'input: {in_ch}')
+            print(f'output: {out_ch}')
             conv_modules += [[
                 nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
@@ -56,8 +58,9 @@ class CNNAutoencoder(nn.Module):
                                    out_channels=out_ch, 
                                    kernel_size=(k, kernel), 
                                    stride=(1, pooling), 
-                                   padding=(0, padding),
+                                   # padding=(0, padding),
                                    output_padding=(0, pooling - 1) if pooling > 1 else 0),
+                                   # output_padding=(0, padding))
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU()
             ]
