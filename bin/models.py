@@ -31,7 +31,7 @@ class CNNAutoencoder(nn.Module):
         self.conv_layers = nn.Sequential(*conv_modules)
 
         # Fully connected layers for latent space
-        self.fc_input = 1 * seq_len * num_channels[-1]
+        self.fc_input = self.compressed_seq_len * num_channels[-1]
         self.encoder_fc = nn.Sequential(
             nn.Linear(self.fc_input, latent_dim),
             nn.ReLU()
@@ -63,6 +63,7 @@ class CNNAutoencoder(nn.Module):
         print(f'shape after convolution: {x.shape}')
         x = x.view(x.size(0), -1)  # Flatten
         print(f'shape before encoder fc: {x.shape}')
+
         x = self.encoder_fc(x)
         print(f'shape after encoder fc: {x.shape}')
 
