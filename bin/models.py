@@ -14,6 +14,7 @@ class CNNAutoencoder(nn.Module):
         compressed_seq_len = seq_len
         for pooling in pooling_widths:
             compressed_seq_len = math.ceil(compressed_seq_len / pooling)
+        print(f'compressed seq len: {compressed_seq_len}')
         self.compressed_seq_len = compressed_seq_len  # Final compressed length after encoder
 
 
@@ -58,13 +59,17 @@ class CNNAutoencoder(nn.Module):
     def forward(self, x):
         # Encoder forward pass
         x = self.conv_layers(x)
+        print(f'shape after convolution: {x.shape}')
         x = x.view(x.size(0), -1)  # Flatten
+        print(f'shape before encoder fc: {x.shape}')
         x = self.encoder_fc(x)
+        print(f'shape after encoder fc: {x.shape}')
 
         # Decoder forward pass
         x = self.decoder_fc(x)
+        print(f'shape after decoder fc: {x.shape}')
         # x = x.view(x.size(0), -1, 1, x.size(1) // self.fc_input)  # Unflatten for deconv layers
-        x = x.view(x.size(0), self.num_channels[-1], 1, self.compressed_seq_len)
+        # x = x.view(x.size(0), self.num_channels[-1], 1, self.compressed_seq_len)
         x = self.deconv_layers(x)
         x = self.final_layer(x)
         return self.output_activation(x)  
