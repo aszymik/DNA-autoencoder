@@ -158,17 +158,17 @@ for epoch in range(num_epochs + 1):
         outputs = model(seqs)
         # print(f'Sequences: {seqs.shape}')  # [64, 1, 4, 200]
         # print(f'Output: {outputs.shape}')  # [64, 1, 4, 200]
-        print(f'Sequence: {seqs[0][0]}')
-        print(seqs[0].shape)
-        print(f'Output: {outputs[0][0]}')
+        # print(f'Sequence: {seqs[0][0]}')
+        # print(seqs[0].shape)
+        # print(f'Output: {outputs[0][0]}')
         loss = loss_fn(outputs, seqs)  # Loss function compares output to input (reconstruction loss)
-        print(f'Loss: {loss.item()}')
+        # print(f'Loss: {loss.item()}')
         loss.backward()  # Calculate gradients
 
         # Print gradients for each parameter
-        for name, param in model.named_parameters():
-            if param.grad is not None:  # Check if gradients exist
-                print(f'Gradient for {name}: {param.grad.data}')
+        # for name, param in model.named_parameters():
+        #     if param.grad is not None:  # Check if gradients exist
+        #         print(f'Gradient for {name}: {param.grad.data}')
 
         optimizer.step()
 
@@ -208,8 +208,8 @@ for epoch in range(num_epochs + 1):
             loss = loss_fn(outputs, seqs)  # Compute validation loss
 
             valid_loss += loss.item()
-            _, predicted = torch.max(outputs, dim=1)
-            _, true = torch.max(seqs, dim=1)
+            _, predicted = torch.max(outputs, dim=2)
+            _, true = torch.max(seqs, dim=2)
             correct = (predicted == true).sum().item()
             valid_correct_bases += correct  # Total correct bases in this batch
             valid_total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
