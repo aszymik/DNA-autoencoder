@@ -24,13 +24,16 @@ class CNNAutoencoder(nn.Module):
         conv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
             k = 4 if num == 0 else 1  # 4 for the first layer
-            conv_modules += [
+            conv_modules += [[
                 nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
-            ]
-        self.conv_layers = nn.Sequential(*conv_modules)
+            ]]
+        # self.conv_layers = nn.Sequential(*conv_modules)
+        self.conv1 = nn.Sequential(*conv_modules[0])
+        self.conv2 = nn.Sequential(*conv_modules[1])
+        self.conv3 = nn.Sequential(*conv_modules[2])
 
         # Fully connected layers for latent space
         self.fc_input = self.compressed_seq_len * num_channels[-1]
@@ -59,20 +62,28 @@ class CNNAutoencoder(nn.Module):
                     nn.ReLU()
                 ]
             else:
-                deconv_modules += [
+                deconv_modules += [[
                     nn.ConvTranspose2d(in_channels=in_ch, 
                                        out_channels=out_ch, 
                                        kernel_size=(4, kernel), 
                                        stride=(1, pooling), 
                                        padding=(0, padding),
                                        output_padding=(0, pooling - 1) if pooling > 1 else 0),
-                ]
-        self.deconv_layers = nn.Sequential(*deconv_modules)
+                ]]
+        # self.deconv_layers = nn.Sequential(*deconv_modules)
+        self.deconv1 = nn.Sequential(*deconv_modules[0])
+        self.deconv2 = nn.Sequential(*deconv_modules[1])
+        self.deconv3 = nn.Sequential(*deconv_modules[2])
         self.output_activation = nn.Softmax(dim=2)
 
     def forward(self, x):
         # Encoder forward pass
-        x = self.conv_layers(x)
+        # x = self.conv_layers(x)
+        x = self.conv1(x)
+        print(x.shape)
+        x = self.conv2(x)
+        print(x.shape)
+        x = self.conv3(x)
         print(x.shape)
         x = x.view(x.size(0), -1)  # Flatten
         print(x.shape)
@@ -84,7 +95,12 @@ class CNNAutoencoder(nn.Module):
         print(x.shape)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         print(x.shape)
-        x = self.deconv_layers(x)
+        # x = self.deconv_layers(x)
+        x = self.deconv1(x)
+        print(x.shape)
+        x = self.deconv2(x)
+        print(x.shape)
+        x = self.deconv3(x)
         print(x.shape)
         # return x  # crossentropyloss ma wbudowane logSoftmax
         return self.output_activation(x)
