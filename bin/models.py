@@ -24,12 +24,12 @@ class CNNAutoencoder(nn.Module):
         conv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(num_channels[:-1], num_channels[1:], kernel_widths, paddings, pooling_widths)):
             k = 4 if num == 0 else 1  # 4 for the first layer
-            conv_modules += [[
+            conv_modules += [
                 nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
-            ]]
+            ]
         self.conv_layers = nn.Sequential(*conv_modules)
         # self.conv1 = nn.Sequential(*conv_modules[0])
         # self.conv2 = nn.Sequential(*conv_modules[1])
@@ -52,7 +52,7 @@ class CNNAutoencoder(nn.Module):
         for num, (in_ch, out_ch, kernel, padding, pooling, out_pad) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), 
                                                                             reversed(paddings), reversed(pooling_widths), out_paddings)):
             if num < (len(num_channels)-2):
-                deconv_modules += [[
+                deconv_modules += [
                     nn.ConvTranspose2d(in_channels=in_ch, 
                                        out_channels=out_ch, 
                                        kernel_size=(1, kernel), 
@@ -61,16 +61,16 @@ class CNNAutoencoder(nn.Module):
                                        output_padding=(0, out_pad)),
                     nn.BatchNorm2d(out_ch),
                     nn.ReLU()
-                ]]
+                ]
             else:
-                deconv_modules += [[
+                deconv_modules += [
                     nn.ConvTranspose2d(in_channels=in_ch, 
                                        out_channels=out_ch, 
                                        kernel_size=(4, kernel), 
                                        stride=(1, pooling), 
                                        padding=(0, padding),
                                        output_padding=(0, out_pad)),
-                ]]
+                ]
         self.deconv_layers = nn.Sequential(*deconv_modules)
 
         # deconv_modules += [[
