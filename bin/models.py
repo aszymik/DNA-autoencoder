@@ -76,7 +76,8 @@ class CNNAutoencoder(nn.Module):
         x = self.decoder_fc(x)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
-        return self.output_activation(x)
+        return x  # crossentropyloss ma wbudowane logSoftmax
+        # return self.output_activation(x)
 
 
 class CNN1DAutoencoder(nn.Module):

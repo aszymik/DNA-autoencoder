@@ -158,6 +158,8 @@ for epoch in range(num_epochs + 1):
         outputs = model(seqs)
         # print(f'Sequences: {seqs.shape}')  # [64, 1, 4, 200]
         # print(f'Output: {outputs.shape}')  # [64, 1, 4, 200]
+        print(f'Sequence: {seqs[0]}')
+        print(f'Output: {outputs[0]}')
         loss = loss_fn(outputs, seqs)  # Loss function compares output to input (reconstruction loss)
         print(f'loss: {loss}')
         loss.backward()
