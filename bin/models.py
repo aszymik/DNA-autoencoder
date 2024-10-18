@@ -136,8 +136,6 @@ class CNNAutoencoder(nn.Module):
         return x  # crossentropyloss ma wbudowane logSoftmax
         return self.output_activation(x)
 
-model = CNNAutoencoder()
-print(model)
 
 class CNN1DAutoencoder(nn.Module):
     def __init__(self, seq_len=200, input_channels=4, latent_dim=64):
