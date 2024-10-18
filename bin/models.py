@@ -73,7 +73,7 @@ class CNNAutoencoder(nn.Module):
         # self.deconv_layers = nn.Sequential(*deconv_modules)
         self.deconv1 = nn.Sequential(*deconv_modules[0])
         self.deconv2 = nn.Sequential(*deconv_modules[1])
-        self.deconv3 = dnn.Sequential(*deconv_modules[2])
+        self.deconv3 = nn.Sequential(*deconv_modules[2])
         self.output_activation = nn.Softmax(dim=2)
 
     def forward(self, x):
