@@ -156,9 +156,10 @@ for epoch in range(num_epochs + 1):
         # Forward pass
         optimizer.zero_grad()
         outputs = model(seqs)
-        print(f'Sequences: {seqs.shape}')
-        print(f'Output: {outputs.shape}')
+        # print(f'Sequences: {seqs.shape}')  # [64, 1, 4, 200]
+        # print(f'Output: {outputs.shape}')  # [64, 1, 4, 200]
         loss = loss_fn(outputs, seqs)  # Loss function compares output to input (reconstruction loss)
+        print(f'loss: {loss}')
         loss.backward()
         optimizer.step()
 
