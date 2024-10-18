@@ -28,6 +28,7 @@ class SeqDataset(Dataset):
             if not (encoded_seq is None) and len(SR.seq) == seq_len:
                 X = torch.tensor(encoded_seq)
                 print(f'Encoded seq: {X.shape}')
+                print(X)
                 # X = X.unsqueeze(0)  # shape becomes [1, batch_size, seq_len]
                 X = X.reshape(1, *X.size())  # [1, 4, 200]
                 print(f'Encoded seq after: {X.shape}')
