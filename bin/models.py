@@ -51,7 +51,7 @@ class CNNAutoencoder(nn.Module):
         deconv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
             if num < (len(num_channels)-2):
-                deconv_modules += [
+                deconv_modules += [[
                     nn.ConvTranspose2d(in_channels=in_ch, 
                                        out_channels=out_ch, 
                                        kernel_size=(1, kernel), 
@@ -60,7 +60,7 @@ class CNNAutoencoder(nn.Module):
                                        output_padding=(0, pooling - 1) if pooling > 1 else 0),
                     nn.BatchNorm2d(out_ch),
                     nn.ReLU()
-                ]
+                ]]
             else:
                 deconv_modules += [[
                     nn.ConvTranspose2d(in_channels=in_ch, 
@@ -73,7 +73,7 @@ class CNNAutoencoder(nn.Module):
         # self.deconv_layers = nn.Sequential(*deconv_modules)
         self.deconv1 = nn.Sequential(*deconv_modules[0])
         self.deconv2 = nn.Sequential(*deconv_modules[1])
-        self.deconv3 = deconv_modules[2]
+        self.deconv3 = dnn.Sequential(*deconv_modules[2])
         self.output_activation = nn.Softmax(dim=2)
 
     def forward(self, x):
