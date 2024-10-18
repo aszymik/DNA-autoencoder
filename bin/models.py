@@ -6,7 +6,7 @@ class CNNAutoencoder(nn.Module):
     # def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
         
     def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[19, 11, 7], pooling_widths=[3, 4, 4], 
-                 paddings=[2, 2, 2], dropout=0.5):    
+                 dropout=0.5):    
         super(CNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
@@ -49,28 +49,58 @@ class CNNAutoencoder(nn.Module):
         )
 
         deconv_modules = []
-        for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
-            if num < (len(num_channels)-2):
-                deconv_modules += [[
-                    nn.ConvTranspose2d(in_channels=in_ch, 
-                                       out_channels=out_ch, 
-                                       kernel_size=(1, kernel), 
-                                       stride=(1, pooling), 
-                                       padding=(0, padding),
-                                       output_padding=(0, pooling - 1) if pooling > 1 else 0),
-                    nn.BatchNorm2d(out_ch),
-                    nn.ReLU()
-                ]]
-            else:
-                deconv_modules += [[
-                    nn.ConvTranspose2d(in_channels=in_ch, 
-                                       out_channels=out_ch, 
-                                       kernel_size=(4, kernel), 
-                                       stride=(1, pooling), 
-                                       padding=(0, padding),
-                                       output_padding=(0, pooling - 1) if pooling > 1 else 0),
-                ]]
+        # for num, (in_ch, out_ch, kernel, padding, pooling) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), reversed(paddings), reversed(pooling_widths))):
+        #     if num < (len(num_channels)-2):
+        #         deconv_modules += [[
+        #             nn.ConvTranspose2d(in_channels=in_ch, 
+        #                                out_channels=out_ch, 
+        #                                kernel_size=(1, kernel), 
+        #                                stride=(1, pooling), 
+        #                                padding=(0, padding),
+        #                                output_padding=(0, pooling - 1) if pooling > 1 else 0),
+        #             nn.BatchNorm2d(out_ch),
+        #             nn.ReLU()
+        #         ]]
+        #     else:
+        #         deconv_modules += [[
+        #             nn.ConvTranspose2d(in_channels=in_ch, 
+        #                                out_channels=out_ch, 
+        #                                kernel_size=(4, kernel), 
+        #                                stride=(1, pooling), 
+        #                                padding=(0, padding),
+        #                                output_padding=(0, pooling - 1) if pooling > 1 else 0),
+        #         ]]
         # self.deconv_layers = nn.Sequential(*deconv_modules)
+
+        deconv_modules += [[
+            nn.ConvTranspose2d(in_channels=128, 
+                               out_channels=64, 
+                               kernel_size=(1, 7), 
+                               stride=(1, 4), 
+                               padding=(0, 3),
+                               output_padding=(0, 0)),
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU()
+            ]]
+        deconv_modules += [[
+            nn.ConvTranspose2d(in_channels=64, 
+                               out_channels=32, 
+                               kernel_size=(1, 11), 
+                               stride=(1, 4), 
+                               padding=(0, 5),
+                               output_padding=(0, 2)),
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU()
+            ]]
+        deconv_modules += [[
+            nn.ConvTranspose2d(in_channels=32, 
+                               out_channels=1, 
+                               kernel_size=(4, 19), 
+                               stride=(1, 3), 
+                               padding=(0, 9),
+                               output_padding=(0, 1))
+            ]]
+
         self.deconv1 = nn.Sequential(*deconv_modules[0])
         self.deconv2 = nn.Sequential(*deconv_modules[1])
         self.deconv3 = nn.Sequential(*deconv_modules[2])
