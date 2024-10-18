@@ -3,7 +3,10 @@ import math
 
 
 class CNNAutoencoder(nn.Module):
-    def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
+    # def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
+        
+    def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[19, 11, 7], pooling_widths=[3, 4, 4], 
+                 paddings=[2, 2, 2], dropout=0.5):    
         super(CNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
@@ -79,6 +82,8 @@ class CNNAutoencoder(nn.Module):
         # return x  # crossentropyloss ma wbudowane logSoftmax
         return self.output_activation(x)
 
+model = CNNAutoencoder()
+print(model)
 
 class CNN1DAutoencoder(nn.Module):
     def __init__(self, seq_len=200, input_channels=4, latent_dim=64):
