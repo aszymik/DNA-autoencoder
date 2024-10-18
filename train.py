@@ -15,6 +15,9 @@ from bin.models import *
 from argparser import *
 
 # TODO: poprawić results_header, validate
+    # poprawić funkcję, która liczy accuracy, bo coś jest nie tak (200.00)
+    # loss_fn tez źle działa – 0.000
+
     # dodać argument seq_len
     # dodać do loggera info o rozmiarze latent_dim
 
@@ -64,7 +67,7 @@ noise = not args.no_noise
 
 dataset = SeqDataset(filename=args.path+"/"+args.filename, noise=noise, seq_len=seq_len)
 
-# write header of results table
+# Write header of results table
 if not old_results:
     results_table, columns = results_header('train', results_table, RESULTS_COLS)
 else:
@@ -153,6 +156,8 @@ for epoch in range(num_epochs + 1):
         # Forward pass
         optimizer.zero_grad()
         outputs = model(seqs)
+        print(f'Sequences: {seqs.shape}')
+        print(f'Output: {outputs.shape}')
         loss = loss_fn(outputs, seqs)  # Loss function compares output to input (reconstruction loss)
         loss.backward()
         optimizer.step()
