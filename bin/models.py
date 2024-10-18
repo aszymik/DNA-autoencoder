@@ -12,6 +12,7 @@ class CNNAutoencoder(nn.Module):
         num_channels = [1] + num_channels
         self.num_channels = num_channels
         self.seq_len = seq_len
+        paddings = [int((w-1)/2) for w in kernel_widths]
 
         # Track compressed sequence length after pooling in the encoder
         compressed_seq_len = seq_len
