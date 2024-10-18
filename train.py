@@ -162,8 +162,14 @@ for epoch in range(num_epochs + 1):
         print(seqs[0].shape)
         print(f'Output: {outputs[0][0]}')
         loss = loss_fn(outputs, seqs)  # Loss function compares output to input (reconstruction loss)
-        print(f'loss: {loss}')
-        loss.backward()
+        print(f'Loss: {loss.item()}')
+        loss.backward()  # Calculate gradients
+
+        # Print gradients for each parameter
+        for name, param in model.named_parameters():
+            if param.grad is not None:  # Check if gradients exist
+                print(f'Gradient for {name}: {param.grad.data}')
+
         optimizer.step()
 
         # Track total loss for the epoch
@@ -171,8 +177,8 @@ for epoch in range(num_epochs + 1):
 
         # Calculate base-level accuracy
         # correct = calculate_accuracy(outputs, seqs)
-        _, predicted = torch.max(outputs, dim=1)
-        _, true = torch.max(seqs, dim=1)
+        _, predicted = torch.max(outputs, dim=2)
+        _, true = torch.max(seqs, dim=2)
         correct = (predicted == true).sum().item()
         train_correct_bases += correct  # Total correct bases in this batch
         train_total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
