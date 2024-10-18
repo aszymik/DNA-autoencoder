@@ -79,7 +79,7 @@ class CNNAutoencoder(nn.Module):
                                stride=(1, 4), 
                                padding=(0, 3),
                                output_padding=(0, 0)),
-            nn.BatchNorm2d(out_ch),
+            nn.BatchNorm2d(64),
             nn.ReLU()
             ]]
         deconv_modules += [[
@@ -89,7 +89,7 @@ class CNNAutoencoder(nn.Module):
                                stride=(1, 4), 
                                padding=(0, 5),
                                output_padding=(0, 2)),
-            nn.BatchNorm2d(out_ch),
+            nn.BatchNorm2d(32),
             nn.ReLU()
             ]]
         deconv_modules += [[
