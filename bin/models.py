@@ -3,8 +3,6 @@ import math
 
 
 class CNNAutoencoder(nn.Module):
-    # def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[5, 5, 5], paddings=[2, 2, 2], pooling_widths=[2, 2, 2]):
-        
     def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[19, 11, 7], pooling_widths=[3, 4, 4], 
                  out_paddings=[0, 2, 1], dropout=0.5):    
         super(CNNAutoencoder, self).__init__()
@@ -31,9 +29,6 @@ class CNNAutoencoder(nn.Module):
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
         self.conv_layers = nn.Sequential(*conv_modules)
-        # self.conv1 = nn.Sequential(*conv_modules[0])
-        # self.conv2 = nn.Sequential(*conv_modules[1])
-        # self.conv3 = nn.Sequential(*conv_modules[2])
 
         # Fully connected layers for latent space
         self.fc_input = self.compressed_seq_len * num_channels[-1]
@@ -72,67 +67,18 @@ class CNNAutoencoder(nn.Module):
                                        output_padding=(0, out_pad)),
                 ]
         self.deconv_layers = nn.Sequential(*deconv_modules)
-
-        # deconv_modules += [[
-        #     nn.ConvTranspose2d(in_channels=128, 
-        #                        out_channels=64, 
-        #                        kernel_size=(1, 7), 
-        #                        stride=(1, 4), 
-        #                        padding=(0, 3),
-        #                        output_padding=(0, 0)),
-        #     nn.BatchNorm2d(64),
-        #     nn.ReLU()
-        #     ]]
-        # deconv_modules += [[
-        #     nn.ConvTranspose2d(in_channels=64, 
-        #                        out_channels=32, 
-        #                        kernel_size=(1, 11), 
-        #                        stride=(1, 4), 
-        #                        padding=(0, 5),
-        #                        output_padding=(0, 2)),
-        #     nn.BatchNorm2d(32),
-        #     nn.ReLU()
-        #     ]]
-        # deconv_modules += [[
-        #     nn.ConvTranspose2d(in_channels=32, 
-        #                        out_channels=1, 
-        #                        kernel_size=(4, 19), 
-        #                        stride=(1, 3), 
-        #                        padding=(0, 9),
-        #                        output_padding=(0, 1))
-        #     ]]
-
-        # self.deconv1 = nn.Sequential(*deconv_modules[0])
-        # self.deconv2 = nn.Sequential(*deconv_modules[1])
-        # self.deconv3 = nn.Sequential(*deconv_modules[2])
         self.output_activation = nn.Softmax(dim=2)
 
     def forward(self, x):
         # Encoder forward pass
         x = self.conv_layers(x)
-        # x = self.conv1(x)
-        # print(x.shape)
-        # x = self.conv2(x)
-        # print(x.shape)
-        # x = self.conv3(x)
-        # print(x.shape)
         x = x.view(x.size(0), -1)  # Flatten
-        # print(x.shape)
         x = self.encoder_fc(x)
-        # print(x.shape)
 
         # Decoder forward pass
         x = self.decoder_fc(x)
-        # print(x.shape)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
-        # print(x.shape)
         x = self.deconv_layers(x)
-        # x = self.deconv1(x)
-        # print(x.shape)
-        # x = self.deconv2(x)
-        # print(x.shape)
-        # x = self.deconv3(x)
-        # print(x.shape)
         return x  # crossentropyloss ma wbudowane logSoftmax
         return self.output_activation(x)
 
