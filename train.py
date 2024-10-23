@@ -120,7 +120,8 @@ if optimizer_name == 'RMSprop':
 else:
     optimizer = optim_method(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-loss_fn = lossfn()
+# loss_fn = lossfn()
+loss_fn = nn.MSELoss()
 best_acc = 0.0
 best_loss = math.inf
 
@@ -166,9 +167,9 @@ for epoch in range(num_epochs + 1):
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
         # Print gradients for each parameter
-        for name, param in model.named_parameters():
-            if param.grad is not None:  # Check if gradients exist
-                print(f'Gradient for {name}: {param.grad.data}')
+        # for name, param in model.named_parameters():
+        #     if param.grad is not None:  # Check if gradients exist
+        #         print(f'Gradient for {name}: {param.grad.data}')
 
         optimizer.step()
 
