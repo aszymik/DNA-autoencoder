@@ -25,7 +25,8 @@ class CNNAutoencoder(nn.Module):
             conv_modules += [
                 nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
-                nn.ReLU(),
+                # nn.ReLU(),
+                nn.LeakyReLU(negative_slope=0.01),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
         self.conv_layers = nn.Sequential(*conv_modules)
@@ -34,13 +35,15 @@ class CNNAutoencoder(nn.Module):
         self.fc_input = self.compressed_seq_len * num_channels[-1]
         self.encoder_fc = nn.Sequential(
             nn.Linear(self.fc_input, latent_dim),
-            nn.ReLU()
+            # nn.ReLU(),
+            nn.LeakyReLU(negative_slope=0.01),
         )
 
         # Decoder: Fully connected and ConvTranspose2d to recover original dimensions
         self.decoder_fc = nn.Sequential(
             nn.Linear(latent_dim, self.fc_input),
-            nn.ReLU()
+            # nn.ReLU(),
+            nn.LeakyReLU(negative_slope=0.01),
         )
 
         deconv_modules = []
@@ -55,7 +58,8 @@ class CNNAutoencoder(nn.Module):
                                        padding=(0, padding),
                                        output_padding=(0, out_pad)),
                     nn.BatchNorm2d(out_ch),
-                    nn.ReLU()
+                    # nn.ReLU(),
+                    nn.LeakyReLU(negative_slope=0.01),
                 ]
             else:
                 deconv_modules += [
@@ -74,15 +78,15 @@ class CNNAutoencoder(nn.Module):
         self.initialize_weights()  # Call in the __init__ function
 
     def initialize_weights(self):
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-                    nn.init.xavier_uniform_(m.weight)
-                    if m.bias is not None:
-                        nn.init.constant_(m.bias, 0)
-                elif isinstance(m, nn.Linear):
-                    nn.init.xavier_uniform_(m.weight)
-                    if m.bias is not None:
-                        nn.init.constant_(m.bias, 0)
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         # Encoder forward pass
@@ -96,6 +100,7 @@ class CNNAutoencoder(nn.Module):
         x = self.deconv_layers(x)
         return x  # crossentropyloss ma wbudowane logSoftmax
         return self.output_activation(x)
+
 
 
 class CNN1DAutoencoder(nn.Module):
