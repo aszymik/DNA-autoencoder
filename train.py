@@ -158,8 +158,8 @@ for epoch in range(num_epochs + 1):
         optimizer.zero_grad()
         outputs = model(seqs)
 
-        print(seqs[0])
-        print(outputs[0])
+        # print(seqs[0])
+        # print(outputs[0])
 
         loss = loss_fn(outputs, seqs)  # Reconstruction loss
         # print(f'Loss: {loss.item()}')
@@ -167,9 +167,9 @@ for epoch in range(num_epochs + 1):
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
         # Print gradients for each parameter
-        # for name, param in model.named_parameters():
-        #     if param.grad is not None:  # Check if gradients exist
-        #         print(f'Gradient for {name}: {param.grad.data}')
+        for name, param in model.named_parameters():
+            if param.grad is not None:  # Check if gradients exist
+                print(f'Gradient for {name}: {param.grad.data}')
 
         optimizer.step()
 
