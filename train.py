@@ -156,6 +156,10 @@ for epoch in range(num_epochs + 1):
         # Forward pass
         optimizer.zero_grad()
         outputs = model(seqs)
+
+        print(seqs[0])
+        print(outputs[0])
+
         loss = loss_fn(outputs, seqs)  # Reconstruction loss
         # print(f'Loss: {loss.item()}')
         loss.backward()  # Calculate gradients

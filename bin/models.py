@@ -73,8 +73,6 @@ class CNNAutoencoder(nn.Module):
         self.deconv_layers = nn.Sequential(*deconv_modules)
         self.output_activation = nn.Softmax(dim=2)
 
-        
-
         self.initialize_weights()  # Call in the __init__ function
 
     def initialize_weights(self):
