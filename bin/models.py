@@ -1,6 +1,11 @@
 import torch.nn as nn
 import math
 
+# sprawdzic wartosci bezwgledne czy przewiduje same zera
+# jeśli tak, to inny optimizer
+# jeśli nie, to inna architektura
+# przy stracie mozna brac maksimum i tylko do tego
+
 
 class CNNAutoencoder(nn.Module):
     def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[19, 11, 7], pooling_widths=[3, 4, 4], 
@@ -96,7 +101,7 @@ class CNNAutoencoder(nn.Module):
         x = self.decoder_fc(x)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
-        return x  # crossentropyloss ma wbudowane logSoftmax
+        # return x  # crossentropyloss ma wbudowane logSoftmax
         return self.output_activation(x)
 
 

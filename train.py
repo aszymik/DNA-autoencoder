@@ -192,7 +192,7 @@ for epoch in range(num_epochs + 1):
     
     # Validation loop 
     model.eval()
-    with torch.no_grad():  # Disable gradient computation
+    with torch.no_grad():
         for i, seqs in enumerate(valid_loader):
             if use_cuda:
                 seqs = seqs.cuda()
