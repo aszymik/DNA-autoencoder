@@ -168,12 +168,16 @@ for epoch in range(num_epochs + 1):
 
         # Calculate base-level accuracy
         # correct = calculate_accuracy(outputs, seqs)
-        # torch.Size([64, 1, 4, 200])
-        _, predicted = torch.max(outputs, dim=2)
+
+        # [64, 1, 4, 200]
+        _, predicted = torch.max(outputs, dim=2)  # [64, 1, 200]
         _, true = torch.max(seqs, dim=2)
         correct = (predicted == true).sum().item()
+        print(f'correct: {correct}')
         train_correct_bases += correct  # Total correct bases in this batch
-        train_total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
+        train_total_bases += seqs.size(0) * seqs.size(3)  # Total bases in this batch
+
+        print(train_correct_bases, '/', train_total_bases)
 
         if epoch == num_epochs:
             # Store neuron outputs for the last epoch for analysis
@@ -197,14 +201,11 @@ for epoch in range(num_epochs + 1):
             loss = loss_fn(outputs, seqs)  # Compute validation loss
 
             valid_loss += loss.item()
-            _, predicted = torch.max(outputs, dim=2)
-
-            print(f'max shape {predicted.shape}')
-
+            _, predicted = torch.max(outputs, dim=2)  
             _, true = torch.max(seqs, dim=2)
             correct = (predicted == true).sum().item()
             valid_correct_bases += correct  # Total correct bases in this batch
-            valid_total_bases += seqs.size(0) * seqs.size(2)  # Total bases in this batch
+            valid_total_bases += seqs.size(0) * seqs.size(3)  # Total bases in this batch
 
             if epoch == num_epochs:
                 # Store neuron outputs for the last epoch for analysis
