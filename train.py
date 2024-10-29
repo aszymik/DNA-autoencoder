@@ -133,7 +133,6 @@ for epoch in range(num_epochs + 1):
     valid_correct_bases = 0
     train_total_bases = 0
     valid_total_bases = 0
-    # true, scores = [], []
     
     if epoch == num_epochs:
         # If this is the last epoch, store outputs for inspection
@@ -153,10 +152,6 @@ for epoch in range(num_epochs + 1):
         optimizer.zero_grad()
         outputs = model(seqs)
 
-        # print(seqs[0])
-        # if epoch >= 1:
-        #     print(outputs)
-
         loss = loss_fn(outputs, seqs)
         loss.backward()  # Calculate gradients
         # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -173,6 +168,7 @@ for epoch in range(num_epochs + 1):
 
         # Calculate base-level accuracy
         # correct = calculate_accuracy(outputs, seqs)
+        print(seqs.shape)
         _, predicted = torch.max(outputs, dim=2)
         _, true = torch.max(seqs, dim=2)
         correct = (predicted == true).sum().item()
