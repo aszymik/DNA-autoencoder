@@ -32,6 +32,7 @@ class CNNAutoencoder(nn.Module):
                 nn.BatchNorm2d(out_ch),
                 # nn.ReLU(),
                 nn.LeakyReLU(negative_slope=0.01),
+                nn.Dropout(p=dropout),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
         self.conv_layers = nn.Sequential(*conv_modules)
@@ -42,6 +43,7 @@ class CNNAutoencoder(nn.Module):
             nn.Linear(self.fc_input, latent_dim),
             # nn.ReLU(),
             nn.LeakyReLU(negative_slope=0.01),
+            nn.Dropout(p=dropout)
         )
 
         # Decoder: Fully connected and ConvTranspose2d to recover original dimensions
@@ -49,6 +51,7 @@ class CNNAutoencoder(nn.Module):
             nn.Linear(latent_dim, self.fc_input),
             # nn.ReLU(),
             nn.LeakyReLU(negative_slope=0.01),
+            nn.Dropout(p=dropout)
         )
 
         deconv_modules = []
@@ -65,6 +68,7 @@ class CNNAutoencoder(nn.Module):
                     nn.BatchNorm2d(out_ch),
                     # nn.ReLU(),
                     nn.LeakyReLU(negative_slope=0.01),
+                    nn.Dropout(p=dropout)
                 ]
             else:
                 deconv_modules += [
@@ -78,7 +82,7 @@ class CNNAutoencoder(nn.Module):
         self.deconv_layers = nn.Sequential(*deconv_modules)
         self.output_activation = nn.Softmax(dim=2)
 
-        self.initialize_weights()  # Call in the __init__ function
+        self.initialize_weights()
 
     def initialize_weights(self):
         for m in self.modules():
