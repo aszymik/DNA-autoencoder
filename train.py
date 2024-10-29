@@ -15,8 +15,7 @@ from bin.models import *
 from argparser import *
 
 # TODO: poprawić results_header, validate
-    # dodać do loggera info o rozmiarze latent_dim
-    # zapisywać accuracy
+    # mozna ew. liczyć accuracy jako średnią z batchy
 
 
 batch_size, num_workers, num_epochs, acc_threshold, seq_len, namespace = args.batch_size, args.num_workers, args.num_epochs, args.acc_threshold, args.seq_len, args.namespace
@@ -47,8 +46,8 @@ modelfile = args.model if os.path.isfile(args.model) else None
 # Define files for logs and for results
 [logger, results_table], old_results = build_loggers('train', output=args.output, namespace=namespace)
 
-logger.info('\nAnalysis {} begins {}\nInput data: {}\nOutput directory: {}\n'.format(
-    namespace, datetime.now().strftime("%d/%m/%Y %H:%M:%S"), args.path, args.output))
+logger.info('\nAnalysis {} begins {}\nInput data: {}\nOutput directory: {}\nLatent dim: {}'.format(
+    namespace, datetime.now().strftime("%d/%m/%Y %H:%M:%S"), args.path, args.output, args.dim))
 
 t0 = time()
 # CUDA for PyTorch
