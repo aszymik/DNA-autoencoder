@@ -199,8 +199,7 @@ for epoch in range(num_epochs + 1):
             valid_loss += loss.item()
             _, predicted = torch.max(outputs, dim=2)
 
-            print(f'max {torch.max(outputs, dim=2)}')
-            print(f'max shape {torch.max(outputs, dim=2).shape}')
+            print(f'max shape {predicted.shape}')
 
             _, true = torch.max(seqs, dim=2)
             correct = (predicted == true).sum().item()
