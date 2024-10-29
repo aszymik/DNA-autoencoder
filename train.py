@@ -168,7 +168,7 @@ for epoch in range(num_epochs + 1):
 
         # Calculate base-level accuracy
         # correct = calculate_accuracy(outputs, seqs)
-        print(seqs.shape)
+        # torch.Size([64, 1, 4, 200])
         _, predicted = torch.max(outputs, dim=2)
         _, true = torch.max(seqs, dim=2)
         correct = (predicted == true).sum().item()
@@ -179,9 +179,6 @@ for epoch in range(num_epochs + 1):
             # Store neuron outputs for the last epoch for analysis
             for j, outp in enumerate(outputs):
                 train_output_values[j].append(outp.detach().cpu().numpy())
-
-        # true += seqs.tolist()
-        # scores += outputs.tolist()
 
         if i % 10 == 0:
             logger.info('Epoch {}, batch {}/{}'.format(epoch, i, num_batches))
@@ -201,6 +198,10 @@ for epoch in range(num_epochs + 1):
 
             valid_loss += loss.item()
             _, predicted = torch.max(outputs, dim=2)
+
+            print(f'max {torch.max(outputs, dim=2)}')
+            print(f'max shape {torch.max(outputs, dim=2).shape}')
+
             _, true = torch.max(seqs, dim=2)
             correct = (predicted == true).sum().item()
             valid_correct_bases += correct  # Total correct bases in this batch
