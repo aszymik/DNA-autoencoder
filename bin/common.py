@@ -61,7 +61,6 @@ OPTIMIZERS = {
 LOSS_FUNCTIONS = {
     'CrossEntropyLoss': nn.CrossEntropyLoss,
     'MSELoss': nn.MSELoss,
-    'R2Score': regression.R2Score
 }
 
 class OHEncoder:

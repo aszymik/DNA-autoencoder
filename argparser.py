@@ -27,8 +27,8 @@ parser.add_argument('--seed', action='store', metavar='NUMBER', type=int, defaul
 parser.add_argument('--optimizer', action='store', metavar='NAME', type=str, default='Adam',
                     help='optimization algorithm to use for training the network, default = Adam')
 
-parser.add_argument('--loss_fn', action='store', metavar='NAME', type=str, default='CrossEntropyLoss',
-                   help='loss function for training the network, default = CrossEntropyLoss')
+parser.add_argument('--loss_fn', action='store', metavar='NAME', type=str, default='MSELoss',
+                   help='loss function for training the network, default = MSELoss')
 
 parser.add_argument('--batch_size', action='store', metavar='INT', type=int, default=64,
                     help='size of the batch, default: 64')

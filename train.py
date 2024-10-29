@@ -16,11 +16,9 @@ from argparser import *
 
 # TODO: poprawić results_header, validate
     # loss_fn poprawić
-    # dodać argument seq_len
     # dodać do loggera info o rozmiarze latent_dim
+    # zapisywać accuracy
 
-
-seq_len = 200
 
 batch_size, num_workers, num_epochs, acc_threshold, seq_len, namespace = args.batch_size, args.num_workers, args.num_epochs, args.acc_threshold, args.seq_len, args.namespace
 dim = args.dim
@@ -115,8 +113,7 @@ if optimizer_name == 'RMSprop':
 else:
     optimizer = optim_method(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-# loss_fn = lossfn()
-loss_fn = nn.MSELoss()
+loss_fn = lossfn()
 best_acc = 0.0
 best_loss = math.inf
 
@@ -167,17 +164,11 @@ for epoch in range(num_epochs + 1):
         train_loss += loss.item()
 
         # Calculate base-level accuracy
-        # correct = calculate_accuracy(outputs, seqs)
-
-        # [64, 1, 4, 200]
         _, predicted = torch.max(outputs, dim=2)  # [64, 1, 200]
         _, true = torch.max(seqs, dim=2)
         correct = (predicted == true).sum().item()
-        print(f'correct: {correct}')
         train_correct_bases += correct  # Total correct bases in this batch
         train_total_bases += seqs.size(0) * seqs.size(3)  # Total bases in this batch
-
-        print(train_correct_bases, '/', train_total_bases)
 
         if epoch == num_epochs:
             # Store neuron outputs for the last epoch for analysis
