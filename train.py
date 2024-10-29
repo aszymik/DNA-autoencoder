@@ -15,9 +15,7 @@ from bin.models import *
 from argparser import *
 
 # TODO: poprawić results_header, validate
-    # poprawić funkcję, która liczy accuracy, bo coś jest nie tak (200.00)
-    # loss_fn tez źle działa – 0.000
-
+    # loss_fn poprawić
     # dodać argument seq_len
     # dodać do loggera info o rozmiarze latent_dim
 
@@ -46,10 +44,7 @@ optim_method = OPTIMIZERS[optimizer_name]
 lossfn = LOSS_FUNCTIONS[lossfn_name]
 
 lr = args.learning_rate
-if args.no_adjust_lr:
-    adjust_lr = False
-else:
-    adjust_lr = True
+adjust_lr = False if args.no_adjust_lr else True
 
 modelfile = args.model if os.path.isfile(args.model) else None
 
@@ -159,10 +154,9 @@ for epoch in range(num_epochs + 1):
         outputs = model(seqs)
 
         # print(seqs[0])
-        # print(outputs[0])
+        print(outputs)
 
-        loss = loss_fn(outputs, seqs)  # Reconstruction loss
-        # print(f'Loss: {loss.item()}')
+        loss = loss_fn(outputs, seqs)
         loss.backward()  # Calculate gradients
         # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
