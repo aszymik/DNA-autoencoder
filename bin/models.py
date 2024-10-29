@@ -9,7 +9,7 @@ import math
 
 class CNNAutoencoder(nn.Module):
     def __init__(self, seq_len=200, latent_dim=64, num_channels=[32, 64, 128], kernel_widths=[19, 11, 7], pooling_widths=[3, 4, 4], 
-                 out_paddings=[0, 2, 1], dropout=0.2):    
+                 out_paddings=[0, 2, 1], dropout=0.15):    
         super(CNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
