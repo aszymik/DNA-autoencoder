@@ -15,7 +15,6 @@ from bin.models import *
 from argparser import *
 
 # TODO: poprawić results_header, validate
-    # loss_fn poprawić
     # dodać do loggera info o rozmiarze latent_dim
     # zapisywać accuracy
 
@@ -24,13 +23,11 @@ batch_size, num_workers, num_epochs, acc_threshold, seq_len, namespace = args.ba
 dim = args.dim
 
 # Set seed
-seed=args.seed
+seed = args.seed
 torch.manual_seed(seed)  
 np.random.seed(seed)
 
 network_name = "basic"
-if network_name.lower() == "basic":
-    RESULTS_COLS = OrderedDict({'Loss': ['losses', 'float-list']})
 
 optimizer_name = args.optimizer
 lossfn_name = args.loss_fn
@@ -184,7 +181,6 @@ for epoch in range(num_epochs + 1):
         for i, seqs in enumerate(valid_loader):
             if use_cuda:
                 seqs = seqs.cuda()
-
             seqs = seqs.float()
 
             # Forward pass
@@ -215,11 +211,10 @@ for epoch in range(num_epochs + 1):
     valid_accuracy = valid_correct_bases / valid_total_bases
 
     # Store the loss values in a format expected by `write_results`
-    globals()['train_losses'] = [avg_train_loss]
-    globals()['valid_losses'] = [avg_valid_loss]
+    globals()['train_losses'] = avg_train_loss
+    globals()['valid_losses'] = avg_valid_loss
     globals()['train_accuracy'] = train_accuracy
     globals()['valid_accuracy'] = valid_accuracy
-
 
     # If it's the last epoch, save outputs for analysis
     if epoch == num_epochs:

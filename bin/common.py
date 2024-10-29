@@ -63,6 +63,11 @@ LOSS_FUNCTIONS = {
     'MSELoss': nn.MSELoss,
 }
 
+RESULTS_COLS = OrderedDict({
+    'Loss': ['losses', 'float'],
+    'Accuracy': ['accuracy', 'float'],
+})
+
 class OHEncoder:
     def __init__(self, categories=np.array(['A', 'C', 'G', 'T']), noise=True, verbose=True):
         self.noise = noise
