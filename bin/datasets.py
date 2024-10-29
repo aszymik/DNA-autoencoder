@@ -12,26 +12,27 @@ TEST_CHR=["18","19","20","21","22"]
 class SeqDataset(Dataset):   
     def __init__(self, filename, train_chr=TRAIN_CHR, valid_chr=VALID_CHR, test_chr=TEST_CHR, noise=True, seq_len=200):
         
-        self.ids=[]
-        self.train_ids=[]
-        self.test_ids=[]
-        self.valid_ids=[]
-        self.tensors={}
-        self.info={}
-        self.seq_len=seq_len
-
+        self.ids = []
+        self.train_ids = []
+        self.test_ids = []
+        self.valid_ids = []
+        self.tensors = {}
+        self.info = {}
+        self.seq_len = seq_len
 
         OHE = OHEncoder(noise=noise)
         curr_id = 0
+
         for SR in SeqIO.parse(filename,"fasta"):
             encoded_seq = OHE(SR.seq)
+
             if not (encoded_seq is None) and len(SR.seq) == seq_len:
                 X = torch.tensor(encoded_seq)
                 # X = X.unsqueeze(0)
                 X = X.reshape(1, *X.size())  # [1, 4, seq_len]
 
                 chrom=SR.id.split(":")[-2]
-                self.info[curr_id]=SR.id
+                self.info[curr_id] = SR.id
                 if chrom in train_chr:
                     self.ids.append(curr_id)
                     self.train_ids.append(curr_id)
@@ -52,6 +53,7 @@ class SeqDataset(Dataset):
                     curr_id += 1
                 else:
                     print("wrong chromosome",repr(chrom),SR.id,chrom in TRAIN_CHR)
+                    
             else: # not encoded
                 print("problem with seq", SR.id)    
 
