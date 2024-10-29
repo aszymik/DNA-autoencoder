@@ -154,8 +154,8 @@ for epoch in range(num_epochs + 1):
         outputs = model(seqs)
 
         # print(seqs[0])
-        if epoch >= 1:
-            print(outputs)
+        # if epoch >= 1:
+        #     print(outputs)
 
         loss = loss_fn(outputs, seqs)
         loss.backward()  # Calculate gradients
