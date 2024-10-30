@@ -171,6 +171,10 @@ for epoch in range(num_epochs + 1):
             for j, outp in enumerate(outputs):
                 train_output_values[j].append(outp.detach().cpu().numpy())
 
+        if epoch >= 100:
+            with open(f'{args.output}/outputs.txt', 'a') as out_file:
+                out_file.write(f'Epoch {epoch}\n{outputs}')
+
         if i % 10 == 0:
             logger.info('Epoch {}, batch {}/{}'.format(epoch, i, num_batches))
     
