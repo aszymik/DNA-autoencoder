@@ -428,7 +428,7 @@ def build_loggers(stage, output='.', namespace='test', verbose_mode=True, logfil
     if resultfile:
         results_table = logging.getLogger('{}_results'.format(stage))
         results_file = os.path.join(output, '{}_{}_results.tsv'.format(namespace, stage))
-        if os.path.isfile(results_file):
+        if os.path.isfile(results_file) and os.path.getsize(results_file) > 0:  # check if the file exists and is not empty
             old_results = True
         else:
             old_results = False
