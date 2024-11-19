@@ -122,7 +122,7 @@ class CNNAutoencoder(nn.Module):
 
 class SemiCNNAutoencoder(nn.Module):
     def __init__(self, seq_len=200, latent_dim=64, num_channels=[64, 128, 256], kernel_widths=[19, 11, 7], 
-                 pooling_widths=[3, 4, 4], dropout=0.15):    
+                 pooling_widths=[3, 4, 4], decoder_sizes=[200, 400, 600], dropout=0.15):    
         super(SemiCNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
@@ -163,17 +163,14 @@ class SemiCNNAutoencoder(nn.Module):
             nn.LeakyReLU(negative_slope=0.01),
             nn.Dropout(p=dropout),
         ]
-        
-        # Add additional layers to fully reconstruct the original dimensions
-        hidden_units = self.fc_input
-        while hidden_units < seq_len * num_channels[0]:
-            next_units = min(hidden_units * 2, seq_len * num_channels[0])
-            decoder_layers.append(nn.Linear(hidden_units, next_units))
+        decoder_sizes.insert(0, self.fc_input)
+
+        for input, output in zip(decoder_sizes[:-1], decoder_sizes[1:]):
+            decoder_layers.append(nn.Linear(input, output))
             decoder_layers.append(nn.LeakyReLU(negative_slope=0.01))
             decoder_layers.append(nn.Dropout(p=dropout))
-            hidden_units = next_units
         
-        decoder_layers.append(nn.Linear(hidden_units, seq_len * num_channels[0]))
+        decoder_layers.append(nn.Linear(decoder_sizes[-1], 4 * seq_len))
         self.decoder_fc = nn.Sequential(*decoder_layers)
 
         self.output_activation = nn.Softmax(dim=2)  # Softmax for 4x200 output
@@ -199,5 +196,5 @@ class SemiCNNAutoencoder(nn.Module):
 
         # Decoder forward pass
         x = self.decoder_fc(x)
-        x = x.view(x.size(0), 4, self.seq_len)  # Reshape to match original sequence dimensions
+        x = x.view(x.size(0), 1, 4, self.seq_len)  # Reshape to match original sequence dimensions
         return self.output_activation(x)
