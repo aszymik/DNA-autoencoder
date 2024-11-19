@@ -13,9 +13,31 @@ def split_fasta(input_file, output_file):
                 start = i * 200
                 end = start + 200
                 fragment_seq = seq[start:end]
-                fragment_id = f"{record.id}_part{i+1}"
+                fragment_id = f"{transform_header(record.id)}_part{i+1}"
                 fragment_record = f">{fragment_id}\n{fragment_seq}\n"
                 out_fasta.write(fragment_record)
+
+def transform_header(header):
+    # Ensure the header starts with ">"
+    if not header.startswith(">"):
+        raise ValueError("Input string must start with '>'")
+    
+    # Split the header into parts
+    parts = header[1:].split()  # Remove the ">" and split
+    if len(parts) < 6:
+        raise ValueError("Input string does not contain enough parts to process.")
+    
+    # Extract relevant fields
+    chromosome = parts[0].replace("chr", "")
+    position = parts[1]
+    transcript = parts[4]
+    gb_code = parts[5]
+    snps = parts[6]
+    
+    # Format the new header
+    new_header = f">{chromosome}:{position}_{transcript}_{gb_code}_{snps}"
+    return new_header
+
 
 def main():
     parser = argparse.ArgumentParser(description="Split 2000 bp sequences in a FASTA file into 10 parts of 200 bp.")
