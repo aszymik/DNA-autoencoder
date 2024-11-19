@@ -22,7 +22,7 @@ def transform_header(header):
     parts = header.split()
     if len(parts) < 6:
         print(parts)
-        raise ValueError("Input string does not contain enough parts to process.")
+        # raise ValueError("Input string does not contain enough parts to process.")
     
     # Extract relevant fields
     chromosome = parts[0].replace("chr", "")
@@ -42,7 +42,11 @@ def main():
     parser.add_argument("output_file", help="Path to the output FASTA file.")
     args = parser.parse_args()
     
-    split_fasta(args.input_file, args.output_file)
+    # split_fasta(args.input_file, args.output_file)
+    with open(args.output_file, "w") as out_fasta:
+        for record in SeqIO.parse(args.input_file, "fasta"):
+            transform_header(record.id)
+
 
 if __name__ == "__main__":
     main()
