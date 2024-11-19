@@ -25,7 +25,7 @@ seed = args.seed
 torch.manual_seed(seed)  
 np.random.seed(seed)
 
-network_name = "basic"
+network_name = args.net_type
 
 optimizer_name = args.optimizer
 lossfn_name = args.loss_fn
