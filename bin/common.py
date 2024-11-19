@@ -10,7 +10,8 @@ import torch.optim as optim
 import torchmetrics.regression as regression
 
 NET_TYPES = {
-    'basic': CNNAutoencoder
+    'CNN': CNNAutoencoder,
+    'semi-CNN': SemiCNNAutoencoder
 }
 
 PARAMS = OrderedDict({
