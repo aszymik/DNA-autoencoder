@@ -18,12 +18,8 @@ def split_fasta(input_file, output_file):
                 out_fasta.write(fragment_record)
 
 def transform_header(header):
-    # Ensure the header starts with ">"
-    if not header.startswith(">"):
-        raise ValueError("Input string must start with '>'")
-    
     # Split the header into parts
-    parts = header[1:].split()  # Remove the ">" and split
+    parts = header.split()
     if len(parts) < 6:
         raise ValueError("Input string does not contain enough parts to process.")
     
@@ -35,7 +31,7 @@ def transform_header(header):
     snps = parts[6]
     
     # Format the new header
-    new_header = f">{chromosome}:{position}_{transcript}_{gb_code}_{snps}"
+    new_header = f"{chromosome}:{position}_{transcript}_{gb_code}_{snps}"
     return new_header
 
 
