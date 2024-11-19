@@ -32,7 +32,7 @@ lossfn_name = args.loss_fn
 weight_decay = args.weight_decay
 momentum = args.momentum
 
-network = NET_TYPES[network_name.lower()]
+network = NET_TYPES[network_name]
 optim_method = OPTIMIZERS[optimizer_name]
 lossfn = LOSS_FUNCTIONS[lossfn_name]
 
