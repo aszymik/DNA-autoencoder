@@ -54,6 +54,8 @@ parser.add_argument('--momentum', action='store', metavar='FLOAT', type=float, d
                     help='Momentum, default value is 0.1')
 parser.add_argument('--no_noise', action='store_true',
                     help='Not replacing Ns in the sequence with random nucleotides, default: False')
+parser.add_argument('--net_type', action='store', metavar='NAME', type=str, default='CNN',
+                   help='Network type name, default = CNN')
 
 args = parser.parse_args()
 
