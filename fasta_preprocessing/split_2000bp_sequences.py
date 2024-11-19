@@ -21,6 +21,7 @@ def transform_header(header):
     # Split the header into parts
     parts = header.split()
     if len(parts) < 6:
+        print(parts)
         raise ValueError("Input string does not contain enough parts to process.")
     
     # Extract relevant fields
