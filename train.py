@@ -15,7 +15,6 @@ from bin.models import *
 from argparser import *
 
 # TODO: poprawić results_header, validate
-    # mozna ew. liczyć accuracy jako średnią z batchy
 
 
 batch_size, num_workers, num_epochs, acc_threshold, seq_len, namespace = args.batch_size, args.num_workers, args.num_epochs, args.acc_threshold, args.seq_len, args.namespace
@@ -173,7 +172,7 @@ for epoch in range(num_epochs + 1):
 
         if epoch >= 100:
             with open(f'{args.output}/outputs.txt', 'a') as out_file:
-                out_file.write(f'Epoch {epoch}\n{outputs}')
+                out_file.write(f'Epoch {epoch}\n{outputs}\n')
 
         if i % 10 == 0:
             logger.info('Epoch {}, batch {}/{}'.format(epoch, i, num_batches))
