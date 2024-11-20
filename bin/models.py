@@ -144,7 +144,7 @@ class SemiCNNAutoencoder(nn.Module):
                 nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=(k, kernel), padding=(0, padding)),
                 nn.BatchNorm2d(out_ch),
                 nn.LeakyReLU(negative_slope=0.01),
-                nn.Dropout(p=dropout*3),
+                nn.Dropout(p=dropout),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
         self.conv_layers = nn.Sequential(*conv_modules)
@@ -168,7 +168,7 @@ class SemiCNNAutoencoder(nn.Module):
         for input, output in zip(decoder_sizes[:-1], decoder_sizes[1:]):
             decoder_layers.append(nn.Linear(input, output))
             decoder_layers.append(nn.LeakyReLU(negative_slope=0.01))
-            decoder_layers.append(nn.Dropout(p=dropout))
+            decoder_layers.append(nn.Dropout(p=dropout*3))
         
         decoder_layers.append(nn.Linear(decoder_sizes[-1], 4 * seq_len))
         self.decoder_fc = nn.Sequential(*decoder_layers)
