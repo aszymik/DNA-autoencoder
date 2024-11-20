@@ -122,7 +122,7 @@ class CNNAutoencoder(nn.Module):
 
 class SemiCNNAutoencoder(nn.Module):
     def __init__(self, seq_len=200, latent_dim=64, num_channels=[256, 128, 64], kernel_widths=[19, 11, 7], 
-                 pooling_widths=[3, 4, 4], decoder_sizes=[200, 400, 600], dropout=0.15):    
+                 pooling_widths=[3, 4, 4], decoder_sizes=[256, 512, 512, 1024], dropout=0.15):    
         super(SemiCNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
@@ -168,7 +168,7 @@ class SemiCNNAutoencoder(nn.Module):
         for input, output in zip(decoder_sizes[:-1], decoder_sizes[1:]):
             decoder_layers.append(nn.Linear(input, output))
             decoder_layers.append(nn.LeakyReLU(negative_slope=0.01))
-            decoder_layers.append(nn.Dropout(p=dropout*3))
+            decoder_layers.append(nn.Dropout(p=dropout*2))
         
         decoder_layers.append(nn.Linear(decoder_sizes[-1], 4 * seq_len))
         self.decoder_fc = nn.Sequential(*decoder_layers)
