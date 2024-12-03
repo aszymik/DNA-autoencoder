@@ -16,11 +16,12 @@ import math
 
 # poł na pół: encoder cnn i decoder fc
 
+# TODO: zobacz jaki jest output encoder conv i dostosuj kształty warstw fc
 
 class CNNAutoencoder(nn.Module):
     # num_channels wcześniej: [32, 64, 128]
-    def __init__(self, seq_len=200, latent_dim=64, num_channels=[256, 128, 64], kernel_widths=[19, 11, 7], pooling_widths=[3, 4, 4], 
-                 out_paddings=[0, 2, 1], dropout=0.15):    
+    def __init__(self, seq_len=200, latent_dim=200, num_channels=[256, 128, 64], kernel_widths=[19, 11, 7], pooling_widths=[3, 4, 4], 
+                 out_paddings=[0, 2, 1], fc_layers=[256], fc_dropout=0.3, conv_dropout=0.15):    
         super(CNNAutoencoder, self).__init__()
 
         num_channels = [1] + num_channels
@@ -43,27 +44,35 @@ class CNNAutoencoder(nn.Module):
                 nn.BatchNorm2d(out_ch),
                 # nn.ReLU(),
                 nn.LeakyReLU(negative_slope=0.01),
-                nn.Dropout(p=dropout),
+                nn.Dropout(p=conv_dropout),
                 nn.MaxPool2d(kernel_size=(1, pooling), ceil_mode=True)
             ]
         self.conv_layers = nn.Sequential(*conv_modules)
 
         # Fully connected layers for latent space
         self.fc_input = self.compressed_seq_len * num_channels[-1]
-        self.encoder_fc = nn.Sequential(
-            nn.Linear(self.fc_input, latent_dim),
-            # nn.ReLU(),
-            nn.LeakyReLU(negative_slope=0.01),
-            nn.Dropout(p=dropout)
-        )
+
+        encoder_fc_modules = []
+        fc_layers = [self.fc_input] + fc_layers + [latent_dim]
+        for in_shape, out_shape in zip(fc_layers[:-1], fc_layers[1:]):
+            encoder_fc_modules += [
+                nn.Linear(in_shape, out_shape),
+                # nn.ReLU(),
+                nn.LeakyReLU(negative_slope=0.01),
+                nn.Dropout(p=fc_dropout)
+            ]
+        self.encoder_fc = nn.Sequential(*encoder_fc_modules)
 
         # Decoder: Fully connected and ConvTranspose2d to recover original dimensions
-        self.decoder_fc = nn.Sequential(
-            nn.Linear(latent_dim, self.fc_input),
-            # nn.ReLU(),
-            nn.LeakyReLU(negative_slope=0.01),
-            nn.Dropout(p=dropout)
-        )
+        decoder_fc_modules = []
+        for in_shape, out_shape in zip(reversed(fc_layers[1:]), reversed(fc_layers[:-1])):
+            decoder_fc_modules += [
+                nn.Linear(latent_dim, self.fc_input),
+                # nn.ReLU(),
+                nn.LeakyReLU(negative_slope=0.01),
+                nn.Dropout(p=fc_dropout)
+            ]
+        self.decoder_fc = nn.Sequential(*decoder_fc_modules)
 
         deconv_modules = []
         for num, (in_ch, out_ch, kernel, padding, pooling, out_pad) in enumerate(zip(reversed(num_channels[1:]), reversed(num_channels[:-1]), reversed(kernel_widths), 
@@ -79,7 +88,7 @@ class CNNAutoencoder(nn.Module):
                     nn.BatchNorm2d(out_ch),
                     # nn.ReLU(),
                     nn.LeakyReLU(negative_slope=0.01),
-                    nn.Dropout(p=dropout)
+                    nn.Dropout(p=conv_dropout)
                 ]
             else:
                 deconv_modules += [
