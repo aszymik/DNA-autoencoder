@@ -67,7 +67,7 @@ class CNNAutoencoder(nn.Module):
         decoder_fc_modules = []
         for in_shape, out_shape in zip(reversed(fc_layers[1:]), reversed(fc_layers[:-1])):
             decoder_fc_modules += [
-                nn.Linear(latent_dim, self.fc_input),
+                nn.Linear(in_shape, out_shape),
                 # nn.ReLU(),
                 nn.LeakyReLU(negative_slope=0.01),
                 nn.Dropout(p=fc_dropout)

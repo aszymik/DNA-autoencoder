@@ -28,16 +28,16 @@ sweep_config['metric'] = metric
 
 parameters_dict = {
     'optimizer': {
-        'values': ['adam']
+        'values': ['Adam', 'RMSprop']
         },
     'fc_layers': {
-        'values': [[], []]
+        'values': [[256], [256, 256]]
         },
     'fc_dropout': {
         'values': [0.1, 0.2, 0.3, 0.4, 0.5]
         },
     'num_channels': {
-        'values': [[], []]
+        'values': [[256, 128, 64]]
     },
     'conv_dropout': {
         'values': [0.1, 0.15, 0.2]
@@ -46,10 +46,10 @@ parameters_dict = {
         'values': [64, 128]
         },
     'loss_fn': {
-        'values': ['mse', 'cross-enthropy']
+        'values': ['MSELoss', 'CrossEntropyLoss']
     },
     'lr': {
-        'values': [0.001]
+        'values': [0.01, 0.001]
     }
     }
 
@@ -83,14 +83,14 @@ def train_model():
 
         # Use the hyperparameters from the sweep config
         optimizer_name = config.optimizer
-        dropout_fc = config.fc_dropout
-        dropout_conv = config.conv_dropout
+        fc_dropout = config.fc_dropout
+        conv_dropout = config.conv_dropout
         lr = config.lr
         batch_size = config.batch_size
         loss_fn_name = config.loss_fn
 
         # Update the model and optimizer with the parameters from the sweep
-        network = NET_TYPES[network_name](seq_len=seq_len, latent_dim=dim, dropout_fc=dropout_fc, dropout_conv=dropout_conv)
+        network = NET_TYPES[network_name](seq_len=seq_len, latent_dim=dim, fc_dropout=fc_dropout, conv_dropout=conv_dropout)
         loss_fn = LOSS_FUNCTIONS[loss_fn_name]()
         optimizer = OPTIMIZERS[optimizer_name](network.parameters(), lr=lr, weight_decay=weight_decay)
 
