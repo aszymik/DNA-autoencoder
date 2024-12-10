@@ -20,11 +20,18 @@ wandb.login()
 sweep_config = {
     'method': 'random'
     }
-metric = {
+
+sweep_config['metric'] = {
     'name': 'loss',
     'goal': 'minimize'   
     }
-sweep_config['metric'] = metric
+
+sweep_config['additional_metrics'] = [
+    {'name': 'reconstruction_accuracy', 'goal': 'maximize'},
+    {'name': 'cosine_similarity', 'goal': 'maximize'},
+    {'name': 'pearson_correlation', 'goal': 'maximize'},
+    {'name': 'validation_loss', 'goal': 'minimize'}
+]
 
 parameters_dict = {
     'optimizer': {
@@ -121,6 +128,11 @@ def train_model():
             # Validation loop
             network.eval()
             valid_loss = 0.0
+            reconstruction_acc = 0.0
+            cosine_sim = 0.0
+            pearson_corr = 0.0
+            num_batches = 0
+
             with torch.no_grad():
                 for seqs in valid_loader:
                     if use_cuda:
@@ -130,17 +142,28 @@ def train_model():
                     loss = loss_fn(outputs, seqs)
                     valid_loss += loss.item()
 
+                    # Compute additional metrics
+                    reconstruction_acc += reconstruction_accuracy(seqs, outputs)
+                    cosine_sim += cosine_similarity(seqs, outputs)
+                    pearson_corr += pearson_correlation(seqs, outputs)
+                    num_batches += 1
+
+            # Average metrics
+            valid_loss /= len(valid_loader)
+            reconstruction_acc /= num_batches
+            cosine_sim /= num_batches
+            pearson_corr /= num_batches
+
             # Log metrics to W&B
             wandb.log({
                 'epoch': epoch,
                 'train_loss': train_loss / len(train_loader),
-                'valid_loss': valid_loss / len(valid_loader),
+                'valid_loss': valid_loss,
+                'reconstruction_accuracy': reconstruction_acc,
+                'cosine_similarity': cosine_sim,
+                'pearson_correlation': pearson_corr,
             })
 
-            # Save the best model
-            if valid_loss < best_loss:
-                torch.save(network.state_dict(), os.path.join(args.output, f"{namespace}_best.model"))
-                best_loss = valid_loss
 
 # Launch the sweep agent
 wandb.agent(sweep_id, function=train_model)
