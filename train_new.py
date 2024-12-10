@@ -26,13 +26,6 @@ sweep_config['metric'] = {
     'goal': 'minimize'   
     }
 
-sweep_config['additional_metrics'] = [
-    {'name': 'reconstruction_accuracy', 'goal': 'maximize'},
-    {'name': 'cosine_similarity', 'goal': 'maximize'},
-    {'name': 'pearson_correlation', 'goal': 'maximize'},
-    {'name': 'validation_loss', 'goal': 'minimize'}
-]
-
 parameters_dict = {
     'optimizer': {
         'values': ['Adam', 'RMSprop']
