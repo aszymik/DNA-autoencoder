@@ -46,7 +46,7 @@ parameters_dict = {
         'values': [64, 128]
         },
     'loss_fn': {
-        'values': ['MSELoss', 'CrossEntropyLoss']
+        'values': ['MSELoss']
     },
     'lr': {
         'values': [0.01, 0.001]
@@ -90,9 +90,9 @@ def train_model():
         loss_fn_name = config.loss_fn
 
         # Update the model and optimizer with the parameters from the sweep
-        network = NET_TYPES[network_name](seq_len=seq_len, latent_dim=dim, fc_dropout=fc_dropout, conv_dropout=conv_dropout)
+        model = NET_TYPES[network_name](seq_len=seq_len, latent_dim=dim, fc_dropout=fc_dropout, conv_dropout=conv_dropout)
         loss_fn = LOSS_FUNCTIONS[loss_fn_name]()
-        optimizer = OPTIMIZERS[optimizer_name](network.parameters(), lr=lr, weight_decay=weight_decay)
+        optimizer = OPTIMIZERS[optimizer_name](model.parameters(), lr=lr, weight_decay=weight_decay)
 
         # Dataloaders
         train_sampler = SubsetRandomSampler(train_ids)
@@ -103,23 +103,23 @@ def train_model():
         best_loss = float("inf")
 
         for epoch in range(num_epochs):
-            network.train()
+            model.train()
             train_loss = 0.0
             for seqs in train_loader:
                 if use_cuda:
                     seqs = seqs.cuda()
-                    network.cuda()
+                    model.cuda()
 
                 seqs = seqs.float()
                 optimizer.zero_grad()
-                outputs = network(seqs)
+                outputs = model(seqs)
                 loss = loss_fn(outputs, seqs)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
 
             # Validation loop
-            network.eval()
+            model.eval()
             valid_loss = 0.0
             reconstruction_acc = 0.0
             cosine_sim = 0.0
@@ -131,7 +131,7 @@ def train_model():
                     if use_cuda:
                         seqs = seqs.cuda()
                     seqs = seqs.float()
-                    outputs = network(seqs)
+                    outputs = model(seqs)
                     loss = loss_fn(outputs, seqs)
                     valid_loss += loss.item()
 
@@ -149,13 +149,20 @@ def train_model():
 
             # Log metrics to W&B
             wandb.log({
-                'epoch': epoch,
                 'train_loss': train_loss / len(train_loader),
                 'valid_loss': valid_loss,
                 'reconstruction_accuracy': reconstruction_acc,
                 'cosine_similarity': cosine_sim,
                 'pearson_correlation': pearson_corr,
             })
+
+            # Save model if it is the last epoch or the reconstruction loss is lower than the best one so far
+            if epoch == num_epochs:
+                torch.save(model.state_dict(), os.path.join(args.output, '{}_last.model'.format(namespace)))
+
+            if valid_loss < best_loss and epoch < num_epochs:
+                torch.save(model.state_dict(), os.path.join(args.output, "{}_{}.model".format(namespace, epoch + 1)))
+                best_loss = valid_loss
 
 
 # Launch the sweep agent
