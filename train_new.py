@@ -18,7 +18,7 @@ import wandb
 wandb.login()
 
 sweep_config = {
-    'method': 'random'
+    'method': 'bayesian'
     }
 
 sweep_config['metric'] = {
@@ -28,7 +28,8 @@ sweep_config['metric'] = {
 
 parameters_dict = {
     'optimizer': {
-        'values': ['Adam', 'RMSprop']
+        'values': ['Adam', 'RMSprop'],
+        # 'distribution': 'uniform'
         },
     'fc_layers': {
         'values': [[256], [256, 256]]
