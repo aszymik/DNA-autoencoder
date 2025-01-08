@@ -6,6 +6,8 @@ import random
 from collections import OrderedDict
 from sklearn.preprocessing import OneHotEncoder as Encoder
 from .models import *
+from scipy.stats import pearsonr
+import torch.nn.functional as F
 import torch.optim as optim
 import torchmetrics.regression as regression
 
@@ -72,7 +74,7 @@ RESULTS_COLS = OrderedDict({
 class OHEncoder:
     def __init__(self, categories=np.array(['A', 'C', 'G', 'T']), noise=True, verbose=True):
         self.noise = noise
-        self.encoder = Encoder(sparse=False, categories=[categories], handle_unknown='ignore', dtype=np.int8)
+        self.encoder = Encoder(sparse_output=False, categories=[categories], handle_unknown='ignore', dtype=np.int8)
         self.dictionary = categories
         self.encoder.fit(categories.reshape(-1, 1))
 		
@@ -101,24 +103,34 @@ class OHEncoder:
         return ''.join([el[0] for el in self.encoder.inverse_transform(array.T)])
 
 
-def calculate_accuracy(outputs, inputs):
+def reconstruction_accuracy(outputs, inputs):
     """
     outputs: The reconstructed sequences from the autoencoder (batch_size, 4, seq_len)
     inputs: The original input sequences (batch_size, 4, seq_len)
     Returns: Accuracy as the percentage of correctly reconstructed bases
     """
-    # Predicted base is the argmax across the 4 channels (A, C, G, T)
-    _, predicted = torch.max(outputs, dim=1)  # Get the index of the max log-probability
-
-    # True base is the argmax of the input one-hot encoding
-    _, true = torch.max(inputs, dim=1)
-
-    # Compare predicted to true and count correct predictions
-    correct = (predicted == true).sum().item()
+    _, predicted = torch.max(outputs, dim=2)  # [64, 1, 4, 200] -> [64, 1, 200]
+    _, true = torch.max(inputs, dim=2)
+    correct = (predicted == true).float().sum()
     total = torch.numel(true)
 
-    return correct / total  # Return accuracy as a fraction
+    return correct / total
 
+def cosine_similarity(outputs, inputs):
+    # Flatten dim 2 into a single vector for cosine similarity
+    original_flat = inputs.permute(0, 3, 1, 2).reshape(-1, 4)  # shape [batch_size*seq_len, 4]
+    reconstructed_flat = outputs.permute(0, 3, 1, 2).reshape(-1, 4)
+    return F.cosine_similarity(original_flat, reconstructed_flat, dim=1).mean().item()
+
+
+def pearson_correlation(original, reconstructed):
+    # Flatten the tensors
+    original_flat = original.permute(0, 3, 1, 2).reshape(-1, 4).cpu().numpy()  # shape [batch_size*seq_len, 4]
+    reconstructed_flat = reconstructed.permute(0, 3, 1, 2).reshape(-1, 4).cpu().numpy()
+
+    # Calculate Pearson correlation for all one-hot encoded bases
+    correlations = [pearsonr(original_flat[:, i], reconstructed_flat[:, i])[0] for i in range(4)]
+    return sum(correlations) / len(correlations)  # Average over the four bases
 
 def make_chrstr(chrlist):
 
