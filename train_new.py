@@ -59,7 +59,7 @@ parameters_dict = {
 sweep_config['parameters'] = parameters_dict
 
 # Define the sweep configuration
-sweep_id = wandb.sweep(sweep_config, project='Bayes-autoencoder')
+sweep_id = wandb.sweep(sweep_config, project='CNN-VAE')
 
 # Fixed hyperparameters
 network_name = 'CNN-VAE'
