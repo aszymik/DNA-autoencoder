@@ -29,7 +29,6 @@ sweep_config['metric'] = {
 parameters_dict = {
     'optimizer': {
         'values': ['Adam', 'RMSprop'],
-        # 'distribution': 'uniform'
         },
     'fc_layers': {
         'values': [[256], [256, 256]]
