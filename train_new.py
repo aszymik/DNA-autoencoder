@@ -94,7 +94,10 @@ def train_model():
 
         # Update the model and optimizer with the parameters from the sweep
         model = NET_TYPES[network_name](seq_len=seq_len, latent_dim=dim, fc_dropout=fc_dropout, conv_dropout=conv_dropout)
-        loss_fn = LOSS_FUNCTIONS[loss_fn_name]()
+        if network_name == 'CNN-VAE':
+            loss_fn = ELBO_loss
+        else:
+            loss_fn = LOSS_FUNCTIONS[loss_fn_name]()
         optimizer = OPTIMIZERS[optimizer_name](model.parameters(), lr=lr, weight_decay=weight_decay)
 
         # Dataloaders
