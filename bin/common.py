@@ -13,7 +13,8 @@ import torchmetrics.regression as regression
 
 NET_TYPES = {
     'CNN': CNNAutoencoder,
-    'semi-CNN': SemiCNNAutoencoder
+    'semi-CNN': SemiCNNAutoencoder,
+    'CNN-VAE': VAE,
 }
 
 PARAMS = OrderedDict({
@@ -64,6 +65,7 @@ OPTIMIZERS = {
 LOSS_FUNCTIONS = {
     'CrossEntropyLoss': nn.CrossEntropyLoss,
     'MSELoss': nn.MSELoss,
+    'ELBOLoss': ELBO_loss
 }
 
 RESULTS_COLS = OrderedDict({

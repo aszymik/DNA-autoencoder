@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import math
 
 # sprawdzic wartosci bezwgledne czy przewiduje same zera
@@ -268,6 +269,14 @@ class VAE(nn.Module):
         z = self.reparametrize(mu, logvar)
         recon_x = self.decoder(z)
         return recon_x, mu, logvar
+
+def KL_divergence(mu, logvar):
+    return -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+def ELBO_loss(recon_x, x, mu, logvar):
+    recon_loss = F.mse_loss(recon_x, x, reduction='mean')
+    kl_loss = KL_divergence(mu, logvar)
+    return recon_loss + kl_loss
 
 
 class SemiCNNAutoencoder(nn.Module):
