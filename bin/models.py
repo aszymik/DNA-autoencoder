@@ -221,7 +221,7 @@ class Decoder(nn.Module):
         self.output_activation = nn.Softmax(dim=2)
 
     def forward(self, z):
-        x = self.decoder_fc(x)
+        x = self.decoder_fc(z)
         x = x.view(x.size(0), -1, 1, self.compressed_seq_len)  # Unflatten for deconv layers
         x = self.deconv_layers(x)
         return self.output_activation(x)
