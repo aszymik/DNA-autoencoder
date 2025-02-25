@@ -138,8 +138,12 @@ def train_model():
                     if use_cuda:
                         seqs = seqs.cuda()
                     seqs = seqs.float()
-                    outputs = model(seqs)
-                    loss = loss_fn(outputs, seqs)
+                    if network_name == 'CNN-VAE':
+                        recon_seqs, mu, logvar = model(seqs)
+                        loss = ELBO_loss(recon_seqs, seqs, mu, logvar)
+                    else:
+                        outputs = model(seqs)
+                        loss = loss_fn(outputs, seqs)
                     valid_loss += loss.item()
 
                     # Compute additional metrics
