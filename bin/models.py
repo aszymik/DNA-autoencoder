@@ -134,7 +134,7 @@ class CNNAutoencoder(nn.Module):
     
 class Encoder(nn.Module):
     def __init__(self, latent_dim, num_channels, kernel_widths, pooling_widths, paddings,
-                 fc_layers, fc_dropout, conv_dropout, compressed_seq_len):    
+                 fc_layers, fc_dropout, conv_dropout, fc_input):    
         super(Encoder, self).__init__()
 
         # Conv2d, BatchNorm2d, ReLU, MaxPool2d
@@ -152,10 +152,8 @@ class Encoder(nn.Module):
         self.conv_layers = nn.Sequential(*conv_modules)
 
         # FC layers
-        self.fc_input = compressed_seq_len * num_channels[-1]
-
         encoder_fc_modules = []
-        fc_layers = [self.fc_input] + fc_layers
+        fc_layers = [fc_input] + fc_layers
         for in_shape, out_shape in zip(fc_layers[:-1], fc_layers[1:]):
             encoder_fc_modules += [
                 nn.Linear(in_shape, out_shape),
@@ -179,13 +177,13 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(self, latent_dim, num_channels, kernel_widths, pooling_widths, paddings,
-                 out_paddings, fc_layers, fc_dropout, conv_dropout, compressed_seq_len):    
+                 out_paddings, fc_layers, fc_dropout, conv_dropout, compressed_seq_len, fc_input):    
         super(Decoder, self).__init__()
 
         self.compressed_seq_len = compressed_seq_len
 
         # FC and ConvTranspose2d to recover original dimensions
-        fc_layers = [self.fc_input] + fc_layers + [latent_dim]
+        fc_layers = [fc_input] + fc_layers + [latent_dim]
         decoder_fc_modules = []
         for in_shape, out_shape in zip(reversed(fc_layers[1:]), reversed(fc_layers[:-1])):
             decoder_fc_modules += [
@@ -242,10 +240,12 @@ class VAE(nn.Module):
         for pooling in pooling_widths:
             compressed_seq_len = math.ceil(compressed_seq_len / pooling)
         self.compressed_seq_len = compressed_seq_len
+
+        self.fc_input = compressed_seq_len * num_channels[-1]
         
         # Encoder and decoder
-        self.encoder = Encoder(latent_dim, self.num_channels, kernel_widths, pooling_widths, self.paddings, fc_layers, fc_dropout, conv_dropout, compressed_seq_len)
-        self.decoder = Decoder(latent_dim, self.num_channels, kernel_widths, pooling_widths, self.paddings, out_paddings, fc_layers, fc_dropout, conv_dropout, self.compressed_seq_len)
+        self.encoder = Encoder(latent_dim, self.num_channels, kernel_widths, pooling_widths, self.paddings, fc_layers, fc_dropout, conv_dropout, self.fc_input)
+        self.decoder = Decoder(latent_dim, self.num_channels, kernel_widths, pooling_widths, self.paddings, out_paddings, fc_layers, fc_dropout, conv_dropout, self.compressed_seq_len, self.fc_input)
 
         self.initialize_weights()
 
