@@ -18,7 +18,7 @@ import wandb
 wandb.login()
 
 sweep_config = {
-    'method': 'bayesian'
+    'method': 'bayes'
     }
 
 sweep_config['metric'] = {
@@ -56,7 +56,7 @@ parameters_dict = {
 sweep_config['parameters'] = parameters_dict
 
 # Define the sweep configuration
-sweep_id = wandb.sweep(sweep_config, project='autoencoder')
+sweep_id = wandb.sweep(sweep_config, project='Bayes-autoencoder')
 
 # Fixed hyperparameters
 network_name = 'CNN'
