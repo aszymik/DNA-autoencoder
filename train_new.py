@@ -119,8 +119,8 @@ def train_model():
                 seqs = seqs.float()
                 optimizer.zero_grad()
                 if network_name == 'CNN-VAE':
-                    recon_seqs, mu, logvar = model(seqs)
-                    loss = ELBO_loss(recon_seqs, seqs, mu, logvar)
+                    outputs, mu, logvar = model(seqs)
+                    loss = ELBO_loss(outputs, seqs, mu, logvar)
                 else:
                     outputs = model(seqs)
                     loss = loss_fn(outputs, seqs)
@@ -142,8 +142,8 @@ def train_model():
                         seqs = seqs.cuda()
                     seqs = seqs.float()
                     if network_name == 'CNN-VAE':
-                        recon_seqs, mu, logvar = model(seqs)
-                        loss = ELBO_loss(recon_seqs, seqs, mu, logvar)
+                        outputs, mu, logvar = model(seqs)
+                        loss = ELBO_loss(outputs, seqs, mu, logvar)
                     else:
                         outputs = model(seqs)
                         loss = loss_fn(outputs, seqs)
