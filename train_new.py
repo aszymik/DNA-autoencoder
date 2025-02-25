@@ -45,8 +45,11 @@ parameters_dict = {
     'batch_size': {
         'values': [64, 128]
         },
+    # 'loss_fn': {
+    #     'values': ['MSELoss']
+    # },
     'loss_fn': {
-        'values': ['MSELoss']
+        'values': ['ELBOLoss']
     },
     'lr': {
         'values': [0.01, 0.001]
@@ -59,7 +62,7 @@ sweep_config['parameters'] = parameters_dict
 sweep_id = wandb.sweep(sweep_config, project='Bayes-autoencoder')
 
 # Fixed hyperparameters
-network_name = 'CNN'
+network_name = 'CNN-VAE'
 noise = False
 seq_len = args.seq_len
 dim = args.dim
